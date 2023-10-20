@@ -1,5 +1,6 @@
-import { TransactionBlock } from "@mysten/sui.js";
+import { JsonRpcProvider, TransactionBlock } from "@mysten/sui.js";
 import { SENDER_ADDRESS, GAS_BUDGET, sponsor, suiProvider } from "@/config/sui";
+// import { SENDER_ADDRESS, GAS_BUDGET } from "@/config/sui";
 
 // Create a programmable transaction block to send an object from the sender to the recipient
 export const progTxnTransfer = () => {
@@ -9,7 +10,7 @@ export const progTxnTransfer = () => {
 
   // For transferring objects transaction
   const OBJECT_TO_SEND =
-    "0xa7012e5473a0938cf5116222191a99dd9207a01c4021fbeb96c726ea67a1ffe0";
+    "0x774f61a76d630f31f594b6285906d1ea247682b432d3cb6b069bb1bd8c775c32";
 
   const txb = new TransactionBlock();
 
@@ -29,6 +30,7 @@ export const progTxnTransfer = () => {
 
 // const keypair = buf ? Ed25519Keypair.fromSecretKey(buf.slice(1)) : undefined;
 
+// export const sponsorTransactionE2E = async (suiProvider: any, sponsor: any) => {
 export const sponsorTransactionE2E = async () => {
   const gaslessTxb = progTxnTransfer();
 

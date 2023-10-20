@@ -10,20 +10,20 @@ export default function Home() {
   // console.log(process.env.NEXT_PUBLIC_GAS_ACCESS_KEY);
   const wallet = useWallet();
   const [loading, setLoading] = useState(false);
-  const [provider, setProvider] = useState(null);
-  const [sponsor, setSponsor] = useState(null);
+  // const [provider, setProvider] = useState(null);
+  // const [sponsor, setSponsor] = useState(null);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      const response = await fetch("http://localhost:3000/api");
-      if (!response.ok) throw new Error("Failed to fetch data");
-      const data = await response.json();
-      console.log({ data });
-      setProvider(data.provider);
-      setSponsor(data.sponsor);
-    };
-    fetchData();
-  }, []);
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     const response = await fetch("http://localhost:3000/api");
+  //     if (!response.ok) throw new Error("Failed to fetch data");
+  //     const data = await response.json();
+  //     console.log({ data });
+  //     setProvider(data.provider);
+  //     setSponsor(data.sponsor);
+  //   };
+  //   fetchData();
+  // }, []);
 
   const executeTx = async () => {
     const sponsoredResponse = await sponsorTransactionE2E();
