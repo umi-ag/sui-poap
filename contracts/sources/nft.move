@@ -1,23 +1,39 @@
 module coco::nft {
     use sui::url::{Self, Url};
-    use std::string;
+    use std::string::{Self, String};
     use sui::object::{Self, ID, UID};
     use sui::event;
     use sui::transfer;
+    use sui::vec_set::{Self, VecSet};
+    use sui::dynamic_field as df;
+    use sui::dynamic_object_field as dof;
     use sui::tx_context::{Self, TxContext};
 
-    /// An example NFT that can be minted by anybody
     struct CoCoNFT has key, store {
         id: UID,
-        /// Name for the token
-        name: string::String,
-        /// Description of the token
-        description: string::String,
-        /// URL for the token
+        name: String,
+        description: String,
+        url: Url,
+        count: u64,
+    }
+
+    struct CoCoList has key, store {
+        id: UID,
+    }
+
+    struct CoCoItem has key, store {
+        id: UID,
+        // name: String,
+        // description: String,
         url: Url,
     }
 
-    // ===== Events =====
+    fun init(ctx: &mut TxContext) {
+        let list = CoCoList{
+            id: object::new(ctx),
+        };
+        transfer::share_object(list);
+    }
 
     struct NFTMinted has copy, drop {
         // The Object ID of the NFT
@@ -28,7 +44,13 @@ module coco::nft {
         name: string::String,
     }
 
-    // ===== Public view functions =====
+    fun date_key(): String {
+        string::utf8(b"date")
+    }
+
+    fun item_key(): String {
+        string::utf8(b"item")
+    }
 
     /// Get the NFT's `name`
     public fun name(nft: &CoCoNFT): &string::String {
@@ -45,29 +67,66 @@ module coco::nft {
         &nft.url
     }
 
-    // ===== Entrypoints =====
-
     /// Create a new testnet_nft
-    public entry fun mint_to_sender(
+    public fun new_nft(
         name: vector<u8>,
         description: vector<u8>,
         url: vector<u8>,
+        date: vector<u8>,
         ctx: &mut TxContext
-    ) {
-        let sender = tx_context::sender(ctx);
+    ): CoCoNFT {
+        // let sender = tx_context::sender(ctx);
         let nft = CoCoNFT {
             id: object::new(ctx),
             name: string::utf8(name),
             description: string::utf8(description),
             url: url::new_unsafe_from_bytes(url),
+            count: 1,
         };
 
+        df::add(&mut nft.id, date_key(), vec_set::empty<String>());
+        let date_set: &mut VecSet<String> = df::borrow_mut(&mut nft.id, date_key());
+        vec_set::insert(date_set, string::utf8(date));
+        // let customer : &mut VecSet<ID> = df::borrow_mut(&mut nft.id, date());
+        // vec_set::insert(customer, tx_context::sender(&mut ctx));
+        // dof::add(&mut nft.id, item(), CoCoItem { id: object::new(ctx) });
+        nft
+    }
+
+    public fun add_item(
+        // name: vector<u8>,
+        // description: vector<u8>,
+        url: vector<u8>,
+        date: vector<u8>,
+        ctx: &mut TxContext
+    ): CoCoItem {
+        let sender = tx_context::sender(ctx);
+        let item = CoCoItem {
+            id: object::new(ctx),
+            // name: string::utf8(name),
+            // description: string::utf8(description),
+            url: url::new_unsafe_from_bytes(url),
+        };
+        item
+    }
+
+    public entry fun attend(
+        name: vector<u8>,
+        description: vector<u8>,
+        url: vector<u8>,
+        date: vector<u8 >,
+        item_name: vector<u8 >,
+        ctx: &mut TxContext
+    ) {
+        let sender = tx_context::sender(ctx);
+        let nft = new_nft(name, description, url, date, ctx);
+        let item = add_item(item_name, date, ctx);
         event::emit(NFTMinted {
             object_id: object::id(&nft),
             creator: sender,
             name: nft.name,
         });
-
+        dof::add(&mut nft.id, item_key(), item);
         transfer::public_transfer(nft, sender);
     }
 
@@ -89,14 +148,14 @@ module coco::nft {
 
     /// Permanently delete `nft`
     public entry fun burn(nft: CoCoNFT, _: &mut TxContext) {
-        let CoCoNFT { id, name: _, description: _, url: _ } = nft;
+        let CoCoNFT { id, name: _, description: _, url: _ , count: _} = nft;
         object::delete(id)
     }
 }
 
 #[test_only]
 module coco::nft_test {
-    use coco::nft::{Self, CoCoNFT, mint_to_sender, update_description, burn};
+    use coco::nft::{Self, CoCoNFT, new_nft, update_description, burn};
     use sui::test_scenario as ts;
     use sui::transfer;
     use std::string;
@@ -109,10 +168,11 @@ module coco::nft_test {
         let scenario = ts::begin(addr1);
 
         {
-            mint_to_sender(
+            new_nft(
                 b"test",
                 b"a test",
                 b"https://www.sui.io",
+                b"1",
                 ts::ctx(&mut scenario)
             )
         };
