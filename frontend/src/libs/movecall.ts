@@ -1,6 +1,7 @@
 import { JsonRpcProvider, TransactionBlock } from "@mysten/sui.js";
 import { SENDER_ADDRESS, GAS_BUDGET, sponsor, suiProvider } from "@/config/sui";
 // import { SENDER_ADDRESS, GAS_BUDGET } from "@/config/sui";
+import { PACKAGE_ID } from "@/config/constants";
 
 // Create a programmable transaction block to send an object from the sender to the recipient
 export const progTxnTransfer = () => {
@@ -10,7 +11,7 @@ export const progTxnTransfer = () => {
 
   // For transferring objects transaction
   const OBJECT_TO_SEND =
-    "0x774f61a76d630f31f594b6285906d1ea247682b432d3cb6b069bb1bd8c775c32";
+    "0x976affdc1334871709082aedb1d2f84d6d1e33974ecbe33f11ad15be5ead7660";
 
   const txb = new TransactionBlock();
 
@@ -18,6 +19,30 @@ export const progTxnTransfer = () => {
     [txb.object(OBJECT_TO_SEND)],
     txb.pure(RECIPIENT_ADDRESS)
   );
+  return txb;
+};
+
+export const moveCallMintNft = async (props: {
+  name: string;
+  description: string;
+  url: string;
+  date: string;
+  item_name: string;
+}) => {
+  const txb = new TransactionBlock();
+  const moduleName = "nft";
+  const methodName = "attend";
+
+  txb.moveCall({
+    target: `${PACKAGE_ID}::${moduleName}::${methodName}`,
+    arguments: [
+      txb.pure(props.name),
+      txb.pure(props.description),
+      txb.pure(props.url),
+      txb.pure(props.date),
+      txb.pure(props.item_name),
+    ],
+  });
   return txb;
 };
 
