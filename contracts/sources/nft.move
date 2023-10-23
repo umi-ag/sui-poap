@@ -115,7 +115,7 @@ module coco::nft {
         description: vector<u8>,
         url: vector<u8>,
         date: vector<u8 >,
-        item_name: vector<u8 >,
+        item_name: vector<u8>,
         ctx: &mut TxContext
     ) {
         let sender = tx_context::sender(ctx);

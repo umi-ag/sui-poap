@@ -9,8 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@mysten/sui.js": "0.41.0",
-    "@scallop-io/sui-kit-plugins": "^0.37.1",
+    "@mysten/sui.js": "0.41.1",
     "@suiet/wallet-kit": "^0.2.19",
     "dotenv": "^16.3.1",
     "next": "13.5.6",
