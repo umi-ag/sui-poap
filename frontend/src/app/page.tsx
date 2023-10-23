@@ -36,11 +36,15 @@ export default function Home() {
     setMessage("");
     try {
       const gaslessTxb = await moveCallMintNft({
-        name: "wasabi",
-        description: "wasabi's icon",
-        url: "https://pbs.twimg.com/profile_images/1538981748478214144/EUjTgb0v_400x400.jpg",
-        date: "2023/10/30",
+        origin_name: "wasabi",
+        origin_description: "wasabi's icon",
+        origin_url:
+          "https://pbs.twimg.com/profile_images/1538981748478214144/EUjTgb0v_400x400.jpg",
         item_name: "jiro",
+        item_description: "a",
+        item_url:
+          "https://toy.bandai.co.jp/assets/tamagotchi/images/chopper/img_chara01.png",
+        date: "2023/10/30",
       });
       const gaslessPayloadBytes = await gaslessTxb.build({
         provider: suiProvider,
