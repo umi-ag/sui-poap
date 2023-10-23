@@ -1,0 +1,167 @@
+html {
+  font-size: 110%;
+}
+
+html,
+body,
+p,
+h1,
+h2,
+h3,
+h4,
+h5,
+input,
+button,
+div,
+textarea {
+  margin: 0;
+  padding: 0;
+  font-family: Helvetica, Arial, sans-serif;
+  color: black;
+}
+
+body {
+  background-color: #5c94fc;
+}
+
+#page {
+  background-color: #eee;
+  margin: 0 auto;
+  max-width: 800px;
+  min-height: 100vh;
+  padding: 2.5rem 1.2rem;
+  position: relative;
+}
+
+h1 {
+  text-align: center;
+}
+
+#network-indicator {
+  background: #222;
+  border-radius: 6px;
+  color: white;
+  font-family: monospace;
+  padding: 0.15rem 0.4rem;
+  position: absolute;
+  right: 1rem;
+  top: 0.8rem;
+}
+
+#polymedia-logo {
+  position: absolute;
+  top: 0.6rem;
+  img {
+    height: 1.8rem;
+    &:hover {
+      cursor: pointer;
+      filter: brightness(1.16);
+    }
+  }
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 2em;
+  h2 {
+    padding-bottom: 0.5rem;
+  }
+}
+
+#login-buttons {
+  gap: 10px;
+  .btn-login {
+    width: 100%;
+    max-width: 270px;
+    border-radius: 12px;
+    border: 0;
+    color: white;
+    font-size: 1rem;
+    font-weight: bold;
+    padding: 0.8rem 2rem;
+    &:hover {
+      cursor: pointer;
+      filter: brightness(1.3);
+    }
+  }
+}
+
+#accounts {
+  .account {
+    width: 100%;
+    > div {
+      overflow-wrap: break-word;
+      padding: 0.2rem 0;
+      font-family: monospace;
+      font-size: 1.1em;
+    }
+    label.provider {
+      display: inline-block;
+      color: white;
+      border-radius: 6px;
+      padding: 0.15rem 0.4rem;
+    }
+    .btn-send {
+      border: 2px solid black;
+      color: black;
+      background-color: white;
+      font-size: 1rem;
+      font-weight: bold;
+      padding: 0.3rem 0.8rem;
+      margin: 0.5rem 0 1rem;
+      &:hover {
+        cursor: pointer;
+        background-color: gold;
+      }
+      &.disabled {
+        color: #999;
+        border-color: #999;
+        background-color: #ddd;
+        &:hover {
+          cursor: auto;
+        }
+      }
+    }
+  }
+}
+
+&.Google {
+  background-color: #db4437;
+}
+
+&.Twitch {
+  background-color: #9146ff;
+}
+
+&.Facebook {
+  background-color: #0766ff;
+}
+
+// Modal copied from https://github.com/juzybits/polymedia-timezones
+.modal-background {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1000;
+  overflow-y: auto;
+  padding: 1em;
+  box-sizing: border-box;
+  background-color: rgba(0, 0, 0, 0.7);
+}
+.modal-content {
+  position: relative;
+  margin: 0 auto;
+  width: min(800px, 100%);
+  overflow-wrap: break-word;
+  overflow-y: scroll;
+  border-radius: 10px;
+  padding: 1.7em 1.9em 2.1em;
+  box-sizing: border-box;
+  background-color: rgb(255 255 255);
+  font-size: 1.2em;
+  text-align: center;
+}
