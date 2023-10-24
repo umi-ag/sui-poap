@@ -16,14 +16,13 @@ import { toBigIntBE } from "bigint-buffer";
 import { decodeJwt } from "jose";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-// import "./App.less";
+import type { OpenIdProvider, SetupData, AccountData } from "@/types";
+import { moveCallMintNft } from "@/libs/movecall";
+import { SENDER_ADDRESS, GAS_BUDGET, sponsor, suiProvider } from "@/config/sui";
 
-/* Configuration */
-
-import config from "./config.json"; // copy and modify config.example.json with your own values
-
+import config from "@/config/config.json";
 const NETWORK = "devnet";
-const MAX_EPOCH = 2; // keep ephemeral keys active for this many Sui epochs from now (1 epoch ~= 24h)
+const MAX_EPOCH = 1000; // keep ephemeral keys active for this many Sui epochs from now (1 epoch ~= 24h)
 
 const suiClient = new SuiClient({
   url: getFullnodeUrl(NETWORK),
@@ -33,30 +32,6 @@ const suiClient = new SuiClient({
 
 const setupDataKey = "zklogin-demo.setup";
 const accountDataKey = "zklogin-demo.accounts";
-
-/* Types */
-
-type OpenIdProvider = "Google" | "Twitch" | "Facebook";
-
-type SetupData = {
-  provider: OpenIdProvider;
-  maxEpoch: number;
-  randomness: string;
-  ephemeralPublicKey: string;
-  ephemeralPrivateKey: string;
-};
-
-type AccountData = {
-  provider: OpenIdProvider;
-  userAddr: string;
-  zkProofs: any; // TODO: add type
-  ephemeralPublicKey: string;
-  ephemeralPrivateKey: string;
-  userSalt: string;
-  sub: string;
-  aud: string;
-  maxEpoch: number;
-};
 
 export const Home = () => {
   const accounts = useRef<AccountData[]>(loadAccounts()); // useRef() instead of useState() because of setInterval()
@@ -81,6 +56,7 @@ export const Home = () => {
     // Create a nonce
     const { epoch } = await suiClient.getLatestSuiSystemState();
     const maxEpoch = Number(epoch) + MAX_EPOCH; // the ephemeral key will be valid for MAX_EPOCH from now
+    console.log({ maxEpoch });
     const randomness = generateRandomness();
     const ephemeralKeyPair = new Ed25519Keypair();
     const nonce = generateNonce(
@@ -247,7 +223,7 @@ export const Home = () => {
               : jwtPayload.aud[0],
           maxEpoch: setupData.maxEpoch,
         });
-        router.push("/account");
+        // router.push("/account");
       } catch (error) {
         console.error("Error:", error);
         return;
@@ -263,15 +239,76 @@ export const Home = () => {
     setModalContent("🚀 Sending transaction...");
 
     // Sign the transaction bytes with the ephemeral private key.
-    const txb = new TransactionBlock();
-    txb.setSender(account.userAddr);
+    // const txb = new TransactionBlock();
+    // txb.setSender(account.userAddr);
+    const gaslessTxb = await moveCallMintNft({
+      origin_name: "wasabi",
+      origin_description: "wasabi's icon",
+      origin_url:
+        "https://pbs.twimg.com/profile_images/1538981748478214144/EUjTgb0v_400x400.jpg",
+      item_name: "jiro",
+      item_description: "a",
+      item_url:
+        "https://toy.bandai.co.jp/assets/tamagotchi/images/chopper/img_chara01.png",
+      date: "2023/10/30",
+    });
+    const gaslessPayloadBytes = await gaslessTxb.build({
+      provider: suiProvider,
+      onlyTransactionKind: true,
+    });
+    console.log({ gaslessPayloadBytes });
+
+    const gaslessPayloadBase64 = btoa(
+      gaslessPayloadBytes.reduce(
+        (data, byte) => data + String.fromCharCode(byte),
+        ""
+      )
+    );
+
+    console.log(account.userAddr);
+
+    gaslessTxb.setSender(account.userAddr);
+    // gaslessTxb.setGasOwner(sponsor.toSuiAddress());
+    // gaslessTxb.setGasOwner(
+    //   "0xc30e760a16c0e1cd27b4890b0b1a7b2bcb55e84194a081a4b880c9a0f8fd9a4f"
+    // );
+
+    console.log({ gaslessPayloadBase64 });
+
+    const sponsoredResponse = await sponsor.gas_sponsorTransactionBlock(
+      gaslessPayloadBase64,
+      account.userAddr,
+      GAS_BUDGET
+    );
+
+    console.log({ sponsoredResponse });
+
+    const sponsoredStatus =
+      await sponsor.gas_getSponsoredTransactionBlockStatus(
+        sponsoredResponse.txDigest
+      );
+    console.log("Sponsorship Status:", sponsoredStatus);
+
     const ephemeralKeyPair = Ed25519Keypair.fromSecretKey(
       Buffer.from(account.ephemeralPrivateKey, "base64")
     );
-    const { bytes, signature: userSignature } = await txb.sign({
-      client: suiClient,
+
+    console.log({ ephemeralKeyPair });
+
+    const { bytes, signature: userSignature } = await gaslessTxb.sign({
+      client: suiProvider,
       signer: ephemeralKeyPair,
     });
+
+    // const { bytes, signature: userSignature } = await gaslessTxb.sign({
+    //   // suiProvider,
+    //   signer: ephemeralKeyPair,
+    // });
+
+    console.log({ bytes });
+    console.log(sponsoredResponse.txBytes);
+    console.log(bytes === sponsoredResponse.txBytes);
+    console.log({ userSignature });
 
     // Generate an address seed by combining userSalt, sub (subject ID), and aud (audience).
     const addressSeed = genAddressSeed(
@@ -282,6 +319,8 @@ export const Home = () => {
     ).toString();
 
     console.log(account.zkProofs);
+
+    console.log(account.maxEpoch);
 
     // Serialize the zkLogin signature by combining the ZK proof (inputs), the maxEpoch,
     // and the ephemeral signature (userSignature).
@@ -294,11 +333,16 @@ export const Home = () => {
       userSignature,
     });
 
+    console.log({ zkLoginSignature });
+    console.log(sponsoredResponse.signature);
+
     // Execute the transaction
-    await suiClient
+    await suiProvider
       .executeTransactionBlock({
         transactionBlock: bytes,
-        signature: zkLoginSignature,
+        signature: [zkLoginSignature, sponsoredResponse.signature],
+        // signature: [userSignature, sponsoredResponse.signature],
+        requestType: "WaitForLocalExecution",
         options: {
           showEffects: true,
         },
@@ -438,15 +482,11 @@ export const Home = () => {
                   : `${balance} SUI`}
               </div>
               <button
-                className={`btn-send py-2 px-4 rounded ${
-                  !balance
-                    ? "bg-gray-300 cursor-not-allowed"
-                    : "bg-blue-500 text-white hover:bg-blue-700"
-                }`}
+                className="btn-send py-2 px-4 rounded bg-blue-500 text-white hover:bg-blue-700"
                 disabled={!balance}
                 onClick={() => sendTransaction(acct)}
               >
-                Send transaction
+                Mint
               </button>
               <hr className="my-4" />
             </div>

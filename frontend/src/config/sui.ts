@@ -5,6 +5,7 @@ import {
   RawSigner,
   TransactionBlock,
 } from "@mysten/sui.js";
+import { SuiClient, getFullnodeUrl } from "@mysten/sui.js/client";
 import { rpcClient } from "typed-rpc";
 import type { SponsorRpc } from "@/types";
 
@@ -33,3 +34,9 @@ const proxy = (url: string) => "https://cors-proxy.fringe.zone/" + url;
 const SPONSOR_RPC_URL_PROXY = proxy(SPONSOR_RPC_URL);
 
 export const sponsor = rpcClient<SponsorRpc>(SPONSOR_RPC_URL_PROXY);
+
+export const NETWORK = "devnet";
+
+export const suiClient = new SuiClient({
+  url: getFullnodeUrl(NETWORK),
+});

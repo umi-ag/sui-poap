@@ -18,3 +18,25 @@ export interface SponsorRpc {
     txDigest: string
   ): SponsoredTransactionStatus;
 }
+
+export type OpenIdProvider = "Google" | "Twitch" | "Facebook";
+
+export type SetupData = {
+  provider: OpenIdProvider;
+  maxEpoch: number;
+  randomness: string;
+  ephemeralPublicKey: string;
+  ephemeralPrivateKey: string;
+};
+
+export type AccountData = {
+  provider: OpenIdProvider;
+  userAddr: string;
+  zkProofs: any; // TODO: add type
+  ephemeralPublicKey: string;
+  ephemeralPrivateKey: string;
+  userSalt: string;
+  sub: string;
+  aud: string;
+  maxEpoch: number;
+};
