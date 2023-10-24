@@ -24,13 +24,18 @@ export default function Home() {
     r3: 0xffb347,
   });
 
+  useEffect(() => {
+    localStorage.setItem("colors", JSON.stringify(colors));
+  }, [colors]);
+
   const splitObjectId = (objectId: string) => {
-    const length = objectId.length;
+    const str = objectId.slice(2);
+    const length = str.length;
     const partLength = Math.ceil(length / 6);
     const parts = [];
 
     for (let i = 0; i < 6; i++) {
-      parts.push(objectId.slice(i * partLength, (i + 1) * partLength));
+      parts.push(str.slice(i * partLength, (i + 1) * partLength));
     }
 
     return parts;
@@ -113,35 +118,36 @@ export default function Home() {
         requestType: "WaitForLocalExecution",
       });
       console.log({ executeResponse });
-      const matchingObject = executeResponse.objectChanges?.find(
-        (obj) => obj?.objectType === targetType
-      );
-      setObjectId(matchingObject.objectId);
-      console.log(matchingObject.objectId);
-      const parts = splitObjectId(matchingObject.objectId);
-      console.log({ parts });
-      setColors({
-        l1: parseInt(parts[0], 16),
-        l2: parseInt(parts[1], 16),
-        l3: parseInt(parts[2], 16),
-        r1: parseInt(parts[3], 16),
-        r2: parseInt(parts[4], 16),
-        r3: parseInt(parts[5], 16),
-      });
-      console.log({ colors });
-      console.log("Execution Status:", executeResponse.effects?.status.status);
-      const url = `https://suiexplorer.com/txblock/${executeResponse.digest}?network=testnet`;
-      console.log(url);
-      localStorage.setItem("colors", JSON.stringify(colors));
-      // const l1 = colors.l1.toString();
-      // const l2 = colors.l2.toString();
-      // const l3 = colors.l3.toString();
-      // const r1 = colors.r1.toString();
-      // const r2 = colors.r2.toString();
-      // const r3 = colors.r3.toString();
-      // const urlString = `/coin?l1=${l1}&l2=${l2}&l3=${l3}&r1=${r1}&r2=${r2}&r3=${r3}`;
-      // router.push(urlString);
-      router.push("/coin");
+      if (executeResponse.effects?.status.status === "success") {
+        const matchingObject = executeResponse.objectChanges?.find(
+          (obj) => obj?.objectType === targetType
+        );
+        setObjectId(matchingObject.objectId);
+        console.log(matchingObject.objectId);
+        localStorage.setItem("objectId", matchingObject.objectId);
+        const parts = splitObjectId(matchingObject.objectId);
+        console.log({ parts });
+        const result = parseInt("0xcf2ff2a39", 16);
+        console.log(result);
+        setColors({
+          l1: parseInt(parts[0], 16),
+          l2: parseInt(parts[1], 16),
+          l3: parseInt(parts[2], 16),
+          r1: parseInt(parts[3], 16),
+          r2: parseInt(parts[4], 16),
+          r3: parseInt(parts[5], 16),
+        });
+        console.log({ colors });
+        console.log(
+          "Execution Status:",
+          executeResponse.effects?.status.status
+        );
+        const url = `https://suiexplorer.com/txblock/${executeResponse.digest}?network=testnet`;
+        console.log(url);
+        setMessage(`Mint Success! : ${url}`);
+        // localStorage.setItem("colors", JSON.stringify(colors));
+        router.push("/coin");
+      }
     } catch (err) {
       console.log("err:", err);
       setMessage(`Mint failed ${err}`);
@@ -176,6 +182,9 @@ export default function Home() {
           {loading ? "Loading..." : "Execute Transaction"}
         </button>
       </div>
+      {/* <p className="bg-green-100 text-black p-3 rounded-md fixed bottom-4 left-4 max-w-xs break-words">
+        {message}
+      </p> */}
     </div>
   );
 }

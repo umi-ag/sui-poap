@@ -21,7 +21,7 @@ import { moveCallMintNft } from "@/libs/movecall";
 import { SENDER_ADDRESS, GAS_BUDGET, sponsor, suiProvider } from "@/config/sui";
 
 import config from "@/config/config.json";
-const NETWORK = "devnet";
+const NETWORK = "testnet";
 const MAX_EPOCH = 1000; // keep ephemeral keys active for this many Sui epochs from now (1 epoch ~= 24h)
 
 const suiClient = new SuiClient({
