@@ -23,24 +23,28 @@ export const progTxnTransfer = () => {
 };
 
 export const moveCallMintNft = async (props: {
-  name: string;
-  description: string;
-  url: string;
-  date: string;
+  origin_name: string;
+  origin_description: string;
+  origin_url: string;
   item_name: string;
+  item_description: string;
+  item_url: string;
+  date: string;
 }) => {
   const txb = new TransactionBlock();
-  const moduleName = "nft";
-  const methodName = "attend";
+  const moduleName = "my_nft";
+  const methodName = "first_mint";
 
   txb.moveCall({
     target: `${PACKAGE_ID}::${moduleName}::${methodName}`,
     arguments: [
-      txb.pure(props.name),
-      txb.pure(props.description),
-      txb.pure(props.url),
-      txb.pure(props.date),
+      txb.pure(props.origin_name),
+      txb.pure(props.origin_description),
+      txb.pure(props.origin_url),
       txb.pure(props.item_name),
+      txb.pure(props.item_description),
+      txb.pure(props.item_url),
+      txb.pure(props.date),
     ],
   });
   return txb;
