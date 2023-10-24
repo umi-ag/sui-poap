@@ -6,6 +6,7 @@ import { useState, useEffect } from "react";
 import { sponsorTransactionE2E, moveCallMintNft } from "@/libs/movecall";
 import { TransactionBlock } from "@mysten/sui.js";
 import { SENDER_ADDRESS, GAS_BUDGET, sponsor, suiProvider } from "@/config/sui";
+import { PACKAGE_ID } from "@/config/constants";
 // import { ConnectButton, useWalletKit } from "@mysten/wallet-kit";
 
 export default function Home() {
@@ -13,6 +14,27 @@ export default function Home() {
   const wallet = useWallet();
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
+  const [objectId, setObjectId] = useState("");
+  const [colors, setColors] = useState({
+    l1: 0xffd1dc,
+    l2: 0xaec6cf,
+    l3: 0xb39eb5,
+    r1: 0xbfd3c1,
+    r2: 0xfff5b2,
+    r3: 0xffb347,
+  });
+
+  const splitObjectId = (objectId: string) => {
+    const length = objectId.length;
+    const partLength = Math.ceil(length / 6);
+    const parts = [];
+
+    for (let i = 0; i < 6; i++) {
+      parts.push(objectId.slice(i * partLength, (i + 1) * partLength));
+    }
+
+    return parts;
+  };
 
   const executeTx = async () => {
     const sponsoredResponse = await sponsorTransactionE2E();
@@ -83,19 +105,43 @@ export default function Home() {
         transactionBlock: TransactionBlock.from(sponsoredResponse.txBytes),
       });
       console.log({ signature });
+      const targetType = `${PACKAGE_ID}::my_nft::CoCoNFT`;
       const executeResponse = await suiProvider.executeTransactionBlock({
         transactionBlock: sponsoredResponse.txBytes,
         signature: [signature, sponsoredResponse.signature],
-        options: { showEffects: true },
+        options: { showEffects: true, showObjectChanges: true },
         requestType: "WaitForLocalExecution",
       });
       console.log({ executeResponse });
+      const matchingObject = executeResponse.objectChanges?.find(
+        (obj) => obj?.objectType === targetType
+      );
+      setObjectId(matchingObject.objectId);
+      console.log(matchingObject.objectId);
+      const parts = splitObjectId(matchingObject.objectId);
+      console.log({ parts });
+      setColors({
+        l1: parseInt(parts[0], 16),
+        l2: parseInt(parts[1], 16),
+        l3: parseInt(parts[2], 16),
+        r1: parseInt(parts[3], 16),
+        r2: parseInt(parts[4], 16),
+        r3: parseInt(parts[5], 16),
+      });
+      console.log({ colors });
       console.log("Execution Status:", executeResponse.effects?.status.status);
       const url = `https://suiexplorer.com/txblock/${executeResponse.digest}?network=testnet`;
       console.log(url);
-      if (executeResponse.effects?.status.status === "success") {
-        router.push("/coin");
-      }
+      localStorage.setItem("colors", JSON.stringify(colors));
+      // const l1 = colors.l1.toString();
+      // const l2 = colors.l2.toString();
+      // const l3 = colors.l3.toString();
+      // const r1 = colors.r1.toString();
+      // const r2 = colors.r2.toString();
+      // const r3 = colors.r3.toString();
+      // const urlString = `/coin?l1=${l1}&l2=${l2}&l3=${l3}&r1=${r1}&r2=${r2}&r3=${r3}`;
+      // router.push(urlString);
+      router.push("/coin");
     } catch (err) {
       console.log("err:", err);
       setMessage(`Mint failed ${err}`);
