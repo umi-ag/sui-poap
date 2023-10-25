@@ -1,5 +1,31 @@
 import Decimal from "decimal.js";
 
+export type ZKProof = {
+  proofPoints: {
+    a: string[];
+    b: string[][];
+    c: string[];
+  };
+  issBase64Details: {
+    value: string;
+    indexMod4: number;
+  };
+  headerBase64: string;
+};
+
+export type Account = {
+  provider: string;
+  userAddr: string;
+  zkProofs: ZKProof;
+  ephemeralPublicKey: string;
+  ephemeralPrivateKey: string;
+  userSalt: string;
+  sub: string;
+  aud: string;
+  maxEpoch: number;
+  randomeness: string;
+};
+
 // Setup for issuing json rpc calls to the gas station for sponsorship.
 export interface SponsoredTransaction {
   txBytes: string;
@@ -14,10 +40,10 @@ export interface SponsorRpc {
   gas_sponsorTransactionBlock(
     txBytes: string,
     sender: string,
-    gasBudget: number
+    gasBudget: number,
   ): SponsoredTransaction;
   gas_getSponsoredTransactionBlockStatus(
-    txDigest: string
+    txDigest: string,
   ): SponsoredTransactionStatus;
 }
 
@@ -42,7 +68,6 @@ export type AccountData = {
   aud: string;
   maxEpoch: number;
 };
-
 
 type Eyecatch = {
   url: string;
