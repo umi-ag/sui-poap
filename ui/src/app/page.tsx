@@ -1,9 +1,9 @@
 "use client";
 
-import { ConnectButton, useWallet } from "@suiet/wallet-kit";
+import { useWallet } from "@suiet/wallet-kit";
 import { useLocalStorage } from 'usehooks-ts'
 import { useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { TransactionBlock } from "@mysten/sui.js/transactions";
 // import { ConnectButton, useWalletKit } from "@mysten/wallet-kit";
 import style from "./styles/login.module.css";
@@ -203,12 +203,12 @@ export default function Home() {
     <div style={styles.compose}>
       <div style={styles.contentTop}>
         <p
-          className={`${style.mySpecialFont} text-center text-white text-4xl mt-5`}
+          className={`${style.mySpecialFont} text-center text-slate-600 text-4xl mt-5`}
         >
           POAP by zkLogin
         </p>
         <p
-          className={`${style.mySpecialFont} mt-5 text-center text-white text-3xl font-bold leading-9`}
+          className={`${style.mySpecialFont} mt-5 text-center text-slate-600 text-3xl font-bold leading-9`}
         >
           Sponsored Transaction,
           <br />
@@ -216,7 +216,7 @@ export default function Home() {
           <br />
         </p>
         <p
-          className={`${style.mySpecialFont} mt-3 text-center text-white text-3xl font-bold leading-9`}
+          className={`${style.mySpecialFont} mt-3 text-center text-slate-600 text-3xl font-bold leading-9`}
         >
           <span className="text-2xl">presented by</span> Umi Labs
         </p>
@@ -230,7 +230,7 @@ export default function Home() {
             event.preventDefault();
             await handleButtonClick();
           }}
-          className={`bg-gray-500 hover:bg-gray-700 text-white py-3 px-5 rounded-2xl text-xl ${style.myRobotoFont}`}
+          className={`bg-slate-600 hover:bg-slate-700 text-white w-32 py-3 px-5 rounded-xl text-xl ${style.myRobotoFont}`}
           disabled={loading}
         >
           {loading ? "Loading..." : "Mint"}
