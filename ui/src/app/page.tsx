@@ -1,6 +1,7 @@
 "use client";
 
 import { ConnectButton, useWallet } from "@suiet/wallet-kit";
+import { useLocalStorage } from 'usehooks-ts'
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { TransactionBlock } from "@mysten/sui.js/transactions";
@@ -14,9 +15,7 @@ export default function Home() {
   const router = useRouter();
   const wallet = useWallet();
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState("");
-  const [objectId, setObjectId] = useState("");
-  const [colors, setColors] = useState({
+  const [colors, setColors] = useLocalStorage('colors', {
     l1: 0xffd1dc,
     l2: 0xaec6cf,
     l3: 0xb39eb5,
@@ -43,9 +42,6 @@ export default function Home() {
     },
   };
 
-  useEffect(() => {
-    localStorage.setItem("colors", JSON.stringify(colors));
-  }, [colors]);
 
   const splitObjectId = (objectId: string) => {
     const str = objectId.slice(2);
@@ -80,7 +76,6 @@ export default function Home() {
   };
 
   const exctuteMintNFT = async () => {
-    setMessage("");
     const txb = new TransactionBlock();
     try {
       moveCallMintNft(txb, {
@@ -130,11 +125,14 @@ export default function Home() {
         );
 
       console.log("Sponsorship Status:", sponsoredStatus);
+      alert('#38')
       const { signature } = await wallet.signTransactionBlock({
         // @ts-ignore
         transactionBlock: TransactionBlock.from(sponsoredResponse.txBytes),
       });
+
       console.log({ signature });
+      alert('#41')
       const executeResponse = await suiClient.executeTransactionBlock({
         transactionBlock: sponsoredResponse.txBytes,
         signature: [signature, sponsoredResponse.signature],
@@ -142,6 +140,7 @@ export default function Home() {
         requestType: "WaitForLocalExecution",
       });
       console.log({ executeResponse });
+      alert('#42')
 
       if (executeResponse.effects?.status.status === "success") {
         const matchingObject = executeResponse.objectChanges?.find(
@@ -150,12 +149,12 @@ export default function Home() {
         );
 
         if (matchingObject) {
+          alert('#43')
           // @ts-ignore
           setObjectId(matchingObject.objectId);
           // @ts-ignore
           console.log(matchingObject.objectId);
-          // @ts-ignore
-          localStorage.setItem("objectId", matchingObject.objectId);
+
           // @ts-ignore
           const parts = splitObjectId(matchingObject.objectId);
           console.log({ parts });
@@ -176,14 +175,12 @@ export default function Home() {
           );
           const url = `https://suiexplorer.com/txblock/${executeResponse.digest}?network=testnet`;
           console.log(url);
-          setMessage(`Mint Success! : ${url}`);
           // localStorage.setItem("colors", JSON.stringify(colors));
           router.push("/coin");
         }
       }
     } catch (err) {
       console.log("err:", err);
-      setMessage(`Mint failed ${err}`);
     }
   };
 

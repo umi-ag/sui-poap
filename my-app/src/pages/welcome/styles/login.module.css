@@ -1,0 +1,10 @@
+/* styles/MyComponent.module.css */
+
+@import url("https://fonts.googleapis.com/css2?family=EB+Garamond&family=Roboto:wght@700&display=swap");
+
+.mySpecialFont {
+  font-family: "EB Garamond", serif;
+}
+.myRobotoFont {
+  font-family: "Roboto", sans-serif;
+}
