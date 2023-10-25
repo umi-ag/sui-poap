@@ -1,6 +1,6 @@
 {
-  "name": "frostend",
-  "version": "0.202309.2",
+  "name": "sui-poap",
+  "version": "0.202310.1",
   "private": true,
   "scripts": {
     "dev": "next dev",
