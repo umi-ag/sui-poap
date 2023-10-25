@@ -17,7 +17,7 @@ const shinamiProviderUrl =
   `https://api.shinami.com/gas/v1/${shinamiAccountKey}`;
 const shinamiClient = rpcClient<SponsorRpc>(shinamiProviderUrl);
 
-const createSponsoredTransaction = async (
+const fetchSponsoredTransaction = async (
   payloadBytes: Uint8Array,
   userAddress: string,
 ) => {
@@ -39,12 +39,7 @@ const createSponsoredTransaction = async (
 
   // consola.info("Sponsored Response:", JSON.stringify(sponsoredResponse, null, 2));
 
-  // const {txBytes }
-
-  // ★ shinamiから受け取ったtxBytesからTransactionBlockを作成
-  const gaslessTxb = TransactionBlock.from(sponsoredResponse.txBytes);
-
-  return { gaslessTxb, sponsoredResponse };
+  return sponsoredResponse;
 };
 
 export const moveCallSponsored = async (
@@ -68,10 +63,33 @@ export const moveCallSponsored = async (
     onlyTransactionKind: true,
   });
 
-  const { gaslessTxb, sponsoredResponse } = await createSponsoredTransaction(
-    payloadBytes,
-    account.userAddr,
-  );
+  console.log('## 2001', payloadBytes)
+
+  const sponsoredResponse = await fetch("/api/sponsor", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      payloadBytes: Buffer.from(payloadBytes).toString('hex'),
+      userAddress: account.userAddr,
+    }),
+  });
+
+  // const sponsoredResponse  = await fetchSponsoredTransaction(
+  //   payloadBytes,
+  //   account.userAddr,
+  // );
+
+  alert("##1");
+  console.log("sponsoredResponse", sponsoredResponse);
+  alert("##2");
+
+
+  // ★ shinamiから受け取ったtxBytesからTransactionBlockを作成
+  // @ts-ignore
+  const gaslessTxb = TransactionBlock.from(sponsoredResponse.txBytes);
+
   const ephemeralKeyPair = Ed25519Keypair.fromSecretKey(
     Buffer.from(account.ephemeralPrivateKey, "base64"),
   );
@@ -101,6 +119,7 @@ export const moveCallSponsored = async (
   // Execute the transaction
   const r = await suiClient.executeTransactionBlock({
     transactionBlock: bytes,
+    // @ts-ignore
     signature: [zkLoginSignature, sponsoredResponse.signature],
     requestType: "WaitForLocalExecution",
     options: {
