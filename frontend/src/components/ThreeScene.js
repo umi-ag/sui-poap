@@ -15,6 +15,8 @@ const starFrontImg = "/star/starfront.png";
 const ThreeScene = ({ props }) => {
   useEffect(() => {
     const scene = new THREE.Scene();
+    const loader = new THREE.TextureLoader();
+    scene.background = loader.load("/login/background-modified.png");
     const camera = new THREE.PerspectiveCamera(
       75,
       window.innerWidth / window.innerHeight,

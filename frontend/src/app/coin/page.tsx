@@ -22,7 +22,7 @@ export default function Coin() {
     r1: parseInt(hexColors.r1, 16),
     r2: parseInt(hexColors.r2, 16),
     r3: parseInt(hexColors.r3, 16),
-    date: "2023/10/20",
+    date: "2023/10/30",
     num: "#000",
   };
   return (

@@ -8,6 +8,7 @@ import { TransactionBlock } from "@mysten/sui.js";
 import { SENDER_ADDRESS, GAS_BUDGET, sponsor, suiProvider } from "@/config/sui";
 import { PACKAGE_ID } from "@/config/constants";
 // import { ConnectButton, useWalletKit } from "@mysten/wallet-kit";
+import style from "./styles/login.module.css";
 
 export default function Home() {
   const router = useRouter();
@@ -23,6 +24,24 @@ export default function Home() {
     r2: 0xfff5b2,
     r3: 0xffb347,
   });
+
+  const styles = {
+    compose: {
+      background: "url('/login/background.png') center / cover no-repeat",
+      width: "100vw",
+      height: "100vh",
+      boxSizing: "border-box",
+      display: "flex",
+      flexDirection: "column",
+      justifyContent: "space-between",
+    },
+    contentTop: {
+      paddingTop: "10vh",
+    },
+    contentBottom: {
+      paddingBottom: "10vh",
+    },
+  };
 
   useEffect(() => {
     localStorage.setItem("colors", JSON.stringify(colors));
@@ -157,7 +176,7 @@ export default function Home() {
   const handleButtonClick = async () => {
     setLoading(true);
     try {
-      await executeTx();
+      await exctuteMintNFT();
     } catch (error) {
       console.error("Error executing sponsorTransactionE2E:", error);
     } finally {
@@ -166,25 +185,45 @@ export default function Home() {
   };
 
   return (
-    <div className="flex flex-col justify-between items-center p-4">
-      <header className="flex justify-end items-start w-full">
-        <ConnectButton />
-      </header>
-      <div className="flex flex-col justify-center items-center">
+    // <header className="flex justify-end items-start w-full hidden">
+    //   <ConnectButton />
+    // </header>
+    <div style={styles.compose}>
+      <div style={styles.contentTop}>
+        <p
+          className={`${style.mySpecialFont} text-center text-white text-4xl mt-5`}
+        >
+          POAP by zkLogin
+        </p>
+        <p
+          className={`${style.mySpecialFont} mt-5 text-center text-white text-3xl font-bold leading-9`}
+        >
+          Sponsored Transaction,
+          <br />
+          Dynamic / Composable NFT
+          <br />
+        </p>
+        <p
+          className={`${style.mySpecialFont} mt-3 text-center text-white text-3xl font-bold leading-9`}
+        >
+          <span className="text-2xl">presented by</span> Umi Labs
+        </p>
+      </div>
+      <div
+        className="flex flex-col justify-center items-center"
+        style={styles.contentBottom}
+      >
         <button
           onClick={async (event: any) => {
             event.preventDefault();
-            await exctuteMintNFT();
+            await handleButtonClick();
           }}
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full"
+          className={`bg-gray-500 hover:bg-gray-700 text-white py-3 px-5 rounded-2xl text-xl ${style.myRobotoFont}`}
           disabled={loading}
         >
-          {loading ? "Loading..." : "Execute Transaction"}
+          {loading ? "Loading..." : "Mint"}
         </button>
       </div>
-      {/* <p className="bg-green-100 text-black p-3 rounded-md fixed bottom-4 left-4 max-w-xs break-words">
-        {message}
-      </p> */}
     </div>
   );
 }
