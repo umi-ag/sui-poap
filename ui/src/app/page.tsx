@@ -23,7 +23,7 @@ import { AccountData, OpenIdProvider, SetupData } from "src/types";
 
 import config from "src/config/config.json";
 import { GAS_BUDGET, sponsor } from "src/config/sui";
-import { moveCallMintNft } from 'src/libs/sui-poap';
+import { moveCallMintNft } from 'src/libs/coco';
 const NETWORK = "mainnet";
 const MAX_EPOCH = 1; // keep ephemeral keys active for this many Sui epochs from now (1 epoch ~= 24h)
 
@@ -385,7 +385,7 @@ const Home = () => {
     // Sign the transaction bytes with the ephemeral private key.
     const txb = new TransactionBlock();
     txb.setSender(account.userAddr);
-    const gaslessTxb = await moveCallMintNft({
+    moveCallMintNft(txb, {
       origin_name: "wasabi",
       origin_description: "wasabi's icon",
       origin_url:
@@ -396,7 +396,7 @@ const Home = () => {
         "https://toy.bandai.co.jp/assets/tamagotchi/images/chopper/img_chara01.png",
       date: "2023/10/30",
     });
-    const gaslessPayloadBytes = await gaslessTxb.build({
+    const gaslessPayloadBytes = await txb.build({
       provider: suiClient,
       onlyTransactionKind: true,
     });
@@ -409,9 +409,7 @@ const Home = () => {
       )
     );
 
-    // console.log(account.userAddr);
-
-    gaslessTxb.setSender(account.userAddr);
+    txb.setSender(account.userAddr);
     // gaslessTxb.setGasOwner(sponsor.toSuiAddress());
     // gaslessTxb.setGasOwner(
     //   "0xc30e760a16c0e1cd27b4890b0b1a7b2bcb55e84194a081a4b880c9a0f8fd9a4f"
@@ -439,7 +437,7 @@ const Home = () => {
 
     console.log({ ephemeralKeyPair });
 
-    const { bytes, signature: userSignature } = await gaslessTxb.sign({
+    const { bytes, signature: userSignature } = await txb.sign({
       client: suiClient,
       signer: ephemeralKeyPair,
     });
@@ -549,7 +547,12 @@ const Home = () => {
       </div>
       <div id="accounts" className="section">
         <h2 className="text-xl font-bold mb-2">Accounts:</h2>
-        {accounts.map((acct) => {
+        <button onClick={() => {
+          console.log({ accounts })
+        }}>
+          dbg
+        </button>
+        {[accounts].map((acct) => {
           const balance = balances.get(acct.userAddr);
           const explorerLink = linkToExplorer(
             NETWORK,

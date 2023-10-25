@@ -2,9 +2,9 @@
 // import { SENDER_ADDRESS, GAS_BUDGET, sponsor, suiProvider } from "@/config/sui";
 import { TransactionBlock } from "@mysten/sui.js/transactions";
 import { GAS_BUDGET, SENDER_ADDRESS, sponsor, suiClient } from "src/config/sui";
+import { firstMint } from "../moveCall/coco/my-nft/functions";
 // import { SENDER_ADDRESS, GAS_BUDGET } from "@/config/sui";
 
-const PACKAGE_ID = "0x8a6dc43e0b98279f47f4f4187a981846059d9e9b981001916ecdc082e124e7e5"
 
 // Create a programmable transaction block to send an object from the sender to the recipient
 export const progTxnTransfer = () => {
@@ -25,7 +25,7 @@ export const progTxnTransfer = () => {
   return txb;
 };
 
-export const moveCallMintNft = async (props: {
+export const moveCallMintNft = async (txb: TransactionBlock, props: {
   origin_name: string;
   origin_description: string;
   origin_url: string;
@@ -34,23 +34,15 @@ export const moveCallMintNft = async (props: {
   item_url: string;
   date: string;
 }) => {
-  const txb = new TransactionBlock();
-  const moduleName = "my_nft";
-  const methodName = "first_mint";
-
-  txb.moveCall({
-    target: `${PACKAGE_ID}::${moduleName}::${methodName}`,
-    arguments: [
-      txb.pure(props.origin_name),
-      txb.pure(props.origin_description),
-      txb.pure(props.origin_url),
-      txb.pure(props.item_name),
-      txb.pure(props.item_description),
-      txb.pure(props.item_url),
-      txb.pure(props.date),
-    ],
-  });
-  return txb;
+  firstMint(txb, {
+    string1: props.origin_name,
+    string2: props.origin_description,
+    string3: props.origin_url,
+    string4: props.item_name,
+    string5: props.item_description,
+    string6: props.item_url,
+    string7: props.date,
+  })
 };
 
 // const privateKeyBase64 = Buffer.from(
