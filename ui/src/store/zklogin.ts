@@ -51,7 +51,6 @@ export const useZkLoginSetup = create<
   beginZkLogin: async (provider: OpenIdProvider) => {
     const { epoch } = await suiClient.getLatestSuiSystemState();
     const maxEpoch = Number(epoch) + MAX_EPOCH; // the ephemeral key will be valid for MAX_EPOCH from now
-    console.log({ maxEpoch });
     const ephemeralKeyPair = new Ed25519Keypair();
     const randomness = generateRandomness();
 
@@ -87,9 +86,6 @@ export const useZkLoginSetup = create<
     const userAddr = jwtToAddress(get().jwt, get().salt());
     set({ userAddr });
 
-    console.log("account: ", account);
-    alert("randomness: " + get().randomness);
-
     const zkproofs = await getZkProof({
       maxEpoch: get().maxEpoch,
       jwtRandomness: get().randomness,
@@ -110,8 +106,6 @@ export const useZkLoginSetup = create<
     }
     window.history.replaceState(null, "", window.location.pathname); // remove URL fragment
 
-    console.log({ jwt });
-    alert("jwt: " + jwt);
     const jwtPayload = decodeJwt(jwt);
     if (!jwtPayload.sub || !jwtPayload.aud) {
       console.warn("[completeZkLogin] missing jwt.sub or jwt.aud");
@@ -210,6 +204,5 @@ const getZkProof = async (props: {
     }),
   });
   const zkProofs = await response.json();
-  console.log("zkProofs: ", zkProofs)
   return zkProofs;
 };

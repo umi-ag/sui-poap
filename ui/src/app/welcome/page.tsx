@@ -26,6 +26,7 @@ import { moveCallMintNft } from 'src/libs/coco';
 import { useRouter } from 'next/navigation';
 import { useZkLoginSetup } from 'src/store/zklogin';
 import { fetchBalances } from 'src/libs/client';
+import { moveCallSponsored } from 'src/libs/coco/sponsoredZkLogin';
 const NETWORK = "mainnet";
 const MAX_EPOCH = 1; // keep ephemeral keys active for this many Sui epochs from now (1 epoch ~= 24h)
 
@@ -38,47 +39,27 @@ const suiClient = new SuiClient({
 const ZKLOGIN_SETUP = "zklogin-demo.setup";
 const ZKLOGIN_ACCONTS = "zklogin-demo.accounts";
 
-
-
 const Home = () => {
   const [balances, setBalances] = useState<Map<string, number>>(new Map()); // Map<Sui address, SUI balance>
   const [modalContent, setModalContent] = useState<string>("");
   const [account, setAccount] = useLocalStorage<Account | null>(ZKLOGIN_ACCONTS, null)
-
   const zkLoginSetup = useZkLoginSetup()
-
   const router = useRouter()
 
   useEffect(() => {
     if (account) {
       zkLoginSetup.completeZkLogin(account);
     }
-    // fetchBalances(accounts);
-    // const interval = setInterval(() => fetchBalances(accounts), 60_000);
-    // return () => clearInterval(interval);
   }, []);
 
 
   // https://docs.sui.io/build/zk_login#set-up-oauth-flow
   const beginZkLogin = async (provider: OpenIdProvider) => {
-    console.log("AA#1")
     setModalContent(`🔑 Logging in with ${provider}...`);
-    console.log("AA#2")
 
     await zkLoginSetup.beginZkLogin(provider)
-    console.log("AA#3")
     setAccount(zkLoginSetup.account())
-    console.log("AA#4")
-
-    console.log("account", zkLoginSetup.account())
-
-
-    alert("done")
-
     const loginUrl = zkLoginSetup.loginUrl();
-    console.log('loginUrl', loginUrl)
-    alert("done2")
-
     window.location.replace(loginUrl);
   }
 
@@ -114,6 +95,16 @@ const Home = () => {
           dbg jwt
         </button>
       </div>
+      <div>
+        <button onClick={async () => {
+          const account = zkLoginSetup.account()
+          console.log("account", account)
+          const txb = new TransactionBlock()
+          await moveCallSponsored(txb, account);
+        }}>
+          mint
+        </button>
+      </div>
     </div>
   );
 };
@@ -132,9 +123,5 @@ const Modal: React.FC<{
     </div>
   );
 };
-
-function shortenAddress(address: string): string {
-  return "0x" + address.slice(2, 8) + "..." + address.slice(-6);
-}
 
 export default Home;

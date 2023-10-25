@@ -1,10 +1,8 @@
-
 // import { SENDER_ADDRESS, GAS_BUDGET, sponsor, suiProvider } from "@/config/sui";
 import { TransactionBlock } from "@mysten/sui.js/transactions";
 import { GAS_BUDGET, SENDER_ADDRESS, sponsor, suiClient } from "src/config/sui";
 import { firstMint } from "../moveCall/coco/my-nft/functions";
 // import { SENDER_ADDRESS, GAS_BUDGET } from "@/config/sui";
-
 
 // Create a programmable transaction block to send an object from the sender to the recipient
 export const progTxnTransfer = () => {
@@ -20,12 +18,12 @@ export const progTxnTransfer = () => {
 
   txb.transferObjects(
     [txb.object(OBJECT_TO_SEND)],
-    txb.pure(RECIPIENT_ADDRESS)
+    txb.pure(RECIPIENT_ADDRESS),
   );
   return txb;
 };
 
-export const moveCallMintNft = async (txb: TransactionBlock, props: {
+export const moveCallMintNft = (txb: TransactionBlock, props: {
   origin_name: string;
   origin_description: string;
   origin_url: string;
@@ -42,7 +40,7 @@ export const moveCallMintNft = async (txb: TransactionBlock, props: {
     string5: props.item_description,
     string6: props.item_url,
     string7: props.date,
-  })
+  });
 };
 
 // const privateKeyBase64 = Buffer.from(
@@ -68,8 +66,8 @@ export const sponsorTransactionE2E = async () => {
   const gaslessPayloadBase64 = btoa(
     gaslessPayloadBytes.reduce(
       (data, byte) => data + String.fromCharCode(byte),
-      ""
-    )
+      "",
+    ),
   );
 
   console.log({ gaslessPayloadBase64 });
@@ -83,7 +81,7 @@ export const sponsorTransactionE2E = async () => {
   console.log({ sponsoredResponse });
 
   const sponsoredStatus = await sponsor.gas_getSponsoredTransactionBlockStatus(
-    sponsoredResponse.txDigest
+    sponsoredResponse.txDigest,
   );
   console.log("Sponsorship Status:", sponsoredStatus);
 
