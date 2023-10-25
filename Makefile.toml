@@ -1,0 +1,74 @@
+[tasks."up"]
+dependencies = ["install:sui", "install:gen", "ui:up"]
+
+[tasks."install"]
+dependencies = ["install:sui", "install:gen"]
+
+[tasks."install:sui"]
+script = '''
+cargo install --git https://github.com/origin-byte/suivm
+suivm use mainnet-v1.12.2
+'''
+
+[tasks."install:gen"]
+script = '''
+cargo install --locked --git https://github.com/kunalabs-io/sui-client-gen.git
+'''
+
+[tasks."ui:dev"]
+script = '''
+cd ui
+bun run dev
+'''
+
+[tasks."ui:build"]
+script = '''
+cd ui
+bun run build
+'''
+
+[tasks."ui:up"]
+script = '''
+cd ui
+bun update
+'''
+
+[tasks."deploy:sui"]
+script = '''
+cd contracts/sui-poap
+sui client publish --gas-budget 123456789 --skip-dependency-verification
+'''
+
+[tasks."test:math"]
+script = '''
+cd contracts/math
+sui move test
+'''
+
+[tasks."deploy:coinhouse"]
+script = '''
+cd contracts/coin-house
+sui client publish --gas-budget 123456789 --skip-dependency-verification
+'''
+
+[tasks."gen:sui"]
+script = '''
+cd ui/
+bun run gen:sui
+bun run lint
+'''
+
+[tasks."sui:switch:mainnet"]
+script = '''
+sui client switch --env mainnet
+'''
+
+[tasks."sui:add:mainnet"]
+script = '''
+sui client new-env --rpc "https://fullnode.mainnet.sui.io:443" --alias mainnet
+'''
+
+[tasks."sui:add:testnet"]
+script = '''
+sui client new-env --rpc "https://fullnode.testnet.sui.io:443" --alias testnet
+'''
