@@ -1,5 +1,6 @@
 "use client";
 
+import { useLocalStorage } from 'usehooks-ts'
 import { SuiClient, getFullnodeUrl } from "@mysten/sui.js/client";
 import { SerializedSignature } from "@mysten/sui.js/cryptography";
 import { Ed25519Keypair } from "@mysten/sui.js/keypairs/ed25519";
@@ -14,8 +15,7 @@ import {
 import { linkToExplorer } from "@polymedia/webutils";
 import { toBigIntBE } from "bigint-buffer";
 import { decodeJwt } from "jose";
-import { useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { AccountData, OpenIdProvider, SetupData } from "src/types";
 // import type { OpenIdProvider, SetupData, AccountData } from "@/types";
 // import { moveCallMintNft } from "@/libs/movecall";
@@ -32,20 +32,21 @@ const suiClient = new SuiClient({
 
 /* Local storage keys */
 
-const setupDataKey = "zklogin-demo.setup";
-const accountDataKey = "zklogin-demo.accounts";
+const ZKLOGIN_SETUP = "zklogin-demo.setup";
+const ZKLOGIN_ACCONTS = "zklogin-demo.accounts";
+
 
 const Home = () => {
-  const accounts = useRef<AccountData[]>(loadAccounts()); // useRef() instead of useState() because of setInterval()
   const [balances, setBalances] = useState<Map<string, number>>(new Map()); // Map<Sui address, SUI balance>
   const [modalContent, setModalContent] = useState<string>("");
-  const router = useRouter();
+  const [setupData, setSetupData] = useLocalStorage<SetupData | null>(ZKLOGIN_SETUP, null)
+  const [accounts, setAccounts] = useLocalStorage<AccountData[]>(ZKLOGIN_ACCONTS, [])
+
 
   useEffect(() => {
     completeZkLogin();
-
-    fetchBalances(accounts.current);
-    const interval = setInterval(() => fetchBalances(accounts.current), 60_000);
+    fetchBalances(accounts);
+    const interval = setInterval(() => fetchBalances(accounts), 60_000);
     return () => clearInterval(interval);
   }, []);
 
@@ -69,7 +70,7 @@ const Home = () => {
     );
 
     // Save data to local storage so completeZkLogin() can use it after the redirect
-    saveSetupData({
+    setSetupData({
       provider,
       maxEpoch,
       randomness: randomness.toString(),
@@ -164,21 +165,7 @@ const Home = () => {
     const userSalt = "";
     const userAddr = jwtToAddress(jwt, userSalt);
 
-    // Load and clear data from local storage which beginZkLogin() created before the redirect
-    const setupData = loadSetupData();
-    if (!setupData) {
-      console.warn("[completeZkLogin] missing local storage data");
-      return;
-    }
-    clearSetupData();
-    for (const account of accounts.current) {
-      if (userAddr === account.userAddr) {
-        console.warn(
-          `[completeZkLogin] already logged in with this ${setupData.provider} account`
-        ); // TODO: replace old with new
-        return;
-      }
-    }
+    if (!setupData) return
 
     const payloadObject = {
       maxEpoch: setupData.maxEpoch,
@@ -188,12 +175,9 @@ const Home = () => {
       salt: userSalt.toString(),
       keyClaimName: "sub",
     };
-
     const payload = JSON.stringify(payloadObject);
-
     console.log({ payload });
     console.log(config.URL_ZK_PROVER);
-
     console.debug("[completeZkLogin] Requesting ZK proof with:", payload);
 
     async function sendRequest() {
@@ -212,7 +196,8 @@ const Home = () => {
         const zkProofs = await response.json();
         console.log(zkProofs);
 
-        saveAccount({
+        setAccounts({
+          // @ts-ignore
           provider: setupData!.provider,
           userAddr,
           zkProofs,
@@ -543,40 +528,6 @@ const Home = () => {
     setBalances((prevBalances) => new Map([...prevBalances, ...newBalances]));
   }
 
-  /* Local storage */
-
-  function saveSetupData(data: SetupData) {
-    localStorage.setItem(setupDataKey, JSON.stringify(data));
-  }
-
-  function loadSetupData(): SetupData | null {
-    const dataRaw = localStorage.getItem(setupDataKey);
-    if (!dataRaw) {
-      return null;
-    }
-    const data: SetupData = JSON.parse(dataRaw);
-    return data;
-  }
-
-  function clearSetupData(): void {
-    localStorage.removeItem(setupDataKey);
-  }
-
-  function saveAccount(account: AccountData): void {
-    const newAccounts = [account, ...accounts.current];
-    localStorage.setItem(accountDataKey, JSON.stringify(newAccounts));
-    accounts.current = newAccounts;
-    fetchBalances([account]);
-  }
-
-  function loadAccounts(): AccountData[] {
-    const dataRaw = localStorage.getItem(accountDataKey);
-    if (!dataRaw) {
-      return [];
-    }
-    const data: AccountData[] = JSON.parse(dataRaw);
-    return data;
-  }
 
   /* HTML */
 
@@ -602,7 +553,7 @@ const Home = () => {
       </div>
       <div id="accounts" className="section">
         <h2 className="text-xl font-bold mb-2">Accounts:</h2>
-        {accounts.current.map((acct) => {
+        {accounts.map((acct) => {
           const balance = balances.get(acct.userAddr);
           const explorerLink = linkToExplorer(
             NETWORK,
