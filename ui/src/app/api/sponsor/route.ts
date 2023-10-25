@@ -43,5 +43,7 @@ export async function POST(req: Request) {
     userAddress,
   );
 
-  return sponsoredResponse
+  return Response.json(sponsoredResponse);
 }
+
+export const runtime = 'edge';
