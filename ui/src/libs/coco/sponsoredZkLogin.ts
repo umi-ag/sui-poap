@@ -1,8 +1,4 @@
-import destr from "destr";
-import { readFileSync } from "fs";
-import path from "path";
 import { rpcClient } from "typed-rpc";
-import { getFullnodeUrl, SuiClient } from "@mysten/sui.js/client";
 import { TransactionBlock } from "@mysten/sui.js/transactions";
 import { Ed25519Keypair } from "@mysten/sui.js/keypairs/ed25519";
 import { genAddressSeed, getZkLoginSignature } from "@mysten/zklogin";
@@ -65,7 +61,7 @@ export const moveCallSponsored = async (
 
   console.log('## 2001', payloadBytes)
 
-  const sponsoredResponse = await fetch("/api/sponsor", {
+  const res = await fetch("/api/sponsor", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -75,6 +71,7 @@ export const moveCallSponsored = async (
       userAddress: account.userAddr,
     }),
   });
+  const sponsoredResponse = await res.json();
 
   // const sponsoredResponse  = await fetchSponsoredTransaction(
   //   payloadBytes,
