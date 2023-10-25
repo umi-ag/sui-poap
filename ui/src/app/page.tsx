@@ -23,6 +23,7 @@ import { AccountData, OpenIdProvider, SetupData } from "src/types";
 
 import config from "src/config/config.json";
 import { GAS_BUDGET, sponsor } from "src/config/sui";
+import { moveCallMintNft } from 'src/libs/sui-poap';
 const NETWORK = "mainnet";
 const MAX_EPOCH = 1; // keep ephemeral keys active for this many Sui epochs from now (1 epoch ~= 24h)
 
@@ -382,55 +383,55 @@ const Home = () => {
     setModalContent("🚀 Sending transaction...");
 
     // Sign the transaction bytes with the ephemeral private key.
-    // const txb = new TransactionBlock();
-    // txb.setSender(account.userAddr);
-    // const gaslessTxb = await moveCallMintNft({
-    //   origin_name: "wasabi",
-    //   origin_description: "wasabi's icon",
-    //   origin_url:
-    //     "https://pbs.twimg.com/profile_images/1538981748478214144/EUjTgb0v_400x400.jpg",
-    //   item_name: "jiro",
-    //   item_description: "a",
-    //   item_url:
-    //     "https://toy.bandai.co.jp/assets/tamagotchi/images/chopper/img_chara01.png",
-    //   date: "2023/10/30",
-    // });
-    // const gaslessPayloadBytes = await gaslessTxb.build({
-    //   provider: suiClient,
-    //   onlyTransactionKind: true,
-    // });
-    // console.log({ gaslessPayloadBytes });
+    const txb = new TransactionBlock();
+    txb.setSender(account.userAddr);
+    const gaslessTxb = await moveCallMintNft({
+      origin_name: "wasabi",
+      origin_description: "wasabi's icon",
+      origin_url:
+        "https://pbs.twimg.com/profile_images/1538981748478214144/EUjTgb0v_400x400.jpg",
+      item_name: "jiro",
+      item_description: "a",
+      item_url:
+        "https://toy.bandai.co.jp/assets/tamagotchi/images/chopper/img_chara01.png",
+      date: "2023/10/30",
+    });
+    const gaslessPayloadBytes = await gaslessTxb.build({
+      provider: suiClient,
+      onlyTransactionKind: true,
+    });
+    console.log({ gaslessPayloadBytes });
 
-    // const gaslessPayloadBase64 = btoa(
-    //   gaslessPayloadBytes.reduce(
-    //     (data, byte) => data + String.fromCharCode(byte),
-    //     ""
-    //   )
-    // );
+    const gaslessPayloadBase64 = btoa(
+      gaslessPayloadBytes.reduce(
+        (data, byte) => data + String.fromCharCode(byte),
+        ""
+      )
+    );
 
     // console.log(account.userAddr);
 
-    // gaslessTxb.setSender(account.userAddr);
-    // // gaslessTxb.setGasOwner(sponsor.toSuiAddress());
-    // // gaslessTxb.setGasOwner(
-    // //   "0xc30e760a16c0e1cd27b4890b0b1a7b2bcb55e84194a081a4b880c9a0f8fd9a4f"
-    // // );
-
-    // console.log({ gaslessPayloadBase64 });
-
-    // const sponsoredResponse = await sponsor.gas_sponsorTransactionBlock(
-    //   gaslessPayloadBase64,
-    //   account.userAddr,
-    //   GAS_BUDGET,
+    gaslessTxb.setSender(account.userAddr);
+    // gaslessTxb.setGasOwner(sponsor.toSuiAddress());
+    // gaslessTxb.setGasOwner(
+    //   "0xc30e760a16c0e1cd27b4890b0b1a7b2bcb55e84194a081a4b880c9a0f8fd9a4f"
     // );
 
-    // console.log({ sponsoredResponse });
+    console.log({ gaslessPayloadBase64 });
 
-    // const sponsoredStatus =
-    //   await sponsor.gas_getSponsoredTransactionBlockStatus(
-    //     sponsoredResponse.txDigest
-    //   );
-    // console.log("Sponsorship Status:", sponsoredStatus);
+    const sponsoredResponse = await sponsor.gas_sponsorTransactionBlock(
+      gaslessPayloadBase64,
+      account.userAddr,
+      GAS_BUDGET,
+    );
+
+    console.log({ sponsoredResponse });
+
+    const sponsoredStatus =
+      await sponsor.gas_getSponsoredTransactionBlockStatus(
+        sponsoredResponse.txDigest
+      );
+    console.log("Sponsorship Status:", sponsoredStatus);
 
     const ephemeralKeyPair = Ed25519Keypair.fromSecretKey(
       Buffer.from(account.ephemeralPrivateKey, "base64")
@@ -438,20 +439,15 @@ const Home = () => {
 
     console.log({ ephemeralKeyPair });
 
-    // const { bytes, signature: userSignature } = await gaslessTxb.sign({
-    //   client: suiClient,
-    //   signer: ephemeralKeyPair,
-    // });
+    const { bytes, signature: userSignature } = await gaslessTxb.sign({
+      client: suiClient,
+      signer: ephemeralKeyPair,
+    });
 
-    // const { bytes, signature: userSignature } = await gaslessTxb.sign({
-    //   // suiProvider,
-    //   signer: ephemeralKeyPair,
-    // });
-
-    // console.log({ bytes });
-    // console.log(sponsoredResponse.txBytes);
-    // console.log(bytes === sponsoredResponse.txBytes);
-    // console.log({ userSignature });
+    console.log({ bytes });
+    console.log(sponsoredResponse.txBytes);
+    console.log(bytes === sponsoredResponse.txBytes);
+    console.log({ userSignature });
 
     // Generate an address seed by combining userSalt, sub (subject ID), and aud (audience).
     const addressSeed = genAddressSeed(
@@ -465,48 +461,48 @@ const Home = () => {
 
     console.log(account.maxEpoch);
 
-    // // Serialize the zkLogin signature by combining the ZK proof (inputs), the maxEpoch,
-    // // and the ephemeral signature (userSignature).
-    // const zkLoginSignature: SerializedSignature = getZkLoginSignature({
-    //   inputs: {
-    //     ...account.zkProofs,
-    //     addressSeed,
-    //   },
-    //   maxEpoch: account.maxEpoch,
-    //   userSignature,
-    // });
+    // Serialize the zkLogin signature by combining the ZK proof (inputs), the maxEpoch,
+    // and the ephemeral signature (userSignature).
+    const zkLoginSignature: SerializedSignature = getZkLoginSignature({
+      inputs: {
+        ...account.zkProofs,
+        addressSeed,
+      },
+      maxEpoch: account.maxEpoch,
+      userSignature,
+    });
 
-    // console.log({ zkLoginSignature });
-    // console.log(sponsoredResponse.signature);
+    console.log({ zkLoginSignature });
+    console.log(sponsoredResponse.signature);
 
-    // // Execute the transaction
-    // await suiClient
-    //   .executeTransactionBlock({
-    //     transactionBlock: bytes,
-    //     signature: [zkLoginSignature, sponsoredResponse.signature],
-    //     // signature: [userSignature, sponsoredResponse.signature],
-    //     requestType: "WaitForLocalExecution",
-    //     options: {
-    //       showEffects: true,
-    //     },
-    //   })
-    //   .then((result) => {
-    //     console.debug(
-    //       "[sendTransaction] executeTransactionBlock response:",
-    //       result
-    //     );
-    //     fetchBalances([account]);
-    //   })
-    //   .catch((error) => {
-    //     console.warn(
-    //       "[sendTransaction] executeTransactionBlock failed:",
-    //       error
-    //     );
-    //     return null;
-    //   })
-    //   .finally(() => {
-    //     setModalContent("");
-    //   });
+    // Execute the transaction
+    await suiClient
+      .executeTransactionBlock({
+        transactionBlock: bytes,
+        signature: [zkLoginSignature, sponsoredResponse.signature],
+        // signature: [userSignature, sponsoredResponse.signature],
+        requestType: "WaitForLocalExecution",
+        options: {
+          showEffects: true,
+        },
+      })
+      .then((result) => {
+        console.debug(
+          "[sendTransaction] executeTransactionBlock response:",
+          result
+        );
+        fetchBalances([account]);
+      })
+      .catch((error) => {
+        console.warn(
+          "[sendTransaction] executeTransactionBlock failed:",
+          error
+        );
+        return null;
+      })
+      .finally(() => {
+        setModalContent("");
+      });
   }
 
   // Get the SUI balance for each account
