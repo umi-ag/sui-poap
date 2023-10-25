@@ -1,638 +1,244 @@
 "use client";
 
-import { useLocalStorage } from 'usehooks-ts'
-import { SuiClient, getFullnodeUrl } from "@mysten/sui.js/client";
-import { SerializedSignature } from "@mysten/sui.js/cryptography";
-import { Ed25519Keypair } from "@mysten/sui.js/keypairs/ed25519";
+import { ConnectButton, useWallet } from "@suiet/wallet-kit";
+import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
 import { TransactionBlock } from "@mysten/sui.js/transactions";
-import {
-  genAddressSeed,
-  generateNonce,
-  generateRandomness,
-  getZkLoginSignature,
-  jwtToAddress,
-} from "@mysten/zklogin";
-import { linkToExplorer } from "@polymedia/webutils";
-import { toBigIntBE } from "bigint-buffer";
-import { decodeJwt } from "jose";
-import { useEffect, useState } from "react";
-import { AccountData, OpenIdProvider, SetupData } from "src/types";
-// import type { OpenIdProvider, SetupData, AccountData } from "@/types";
-// import { moveCallMintNft } from "@/libs/movecall";
-// import { SENDER_ADDRESS, GAS_BUDGET, sponsor, suiProvider } from "@/config/sui";
+// import { ConnectButton, useWalletKit } from "@mysten/wallet-kit";
+import style from "./styles/login.module.css";
+import { moveCallMintNft, sponsorTransactionE2E } from "src/libs/coco";
+import { GAS_BUDGET, sponsor, suiClient } from "src/config/sui";
+import { CoCoNFT } from "src/libs/moveCall/coco/my-nft/structs";
 
-import config from "src/config/config.json";
-import { GAS_BUDGET, sponsor } from "src/config/sui";
-import { moveCallMintNft } from 'src/libs/sui-poap';
-const NETWORK = "mainnet";
-const MAX_EPOCH = 1; // keep ephemeral keys active for this many Sui epochs from now (1 epoch ~= 24h)
+export default function Home() {
+  const router = useRouter();
+  const wallet = useWallet();
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState("");
+  const [objectId, setObjectId] = useState("");
+  const [colors, setColors] = useState({
+    l1: 0xffd1dc,
+    l2: 0xaec6cf,
+    l3: 0xb39eb5,
+    r1: 0xbfd3c1,
+    r2: 0xfff5b2,
+    r3: 0xffb347,
+  });
 
-const suiClient = new SuiClient({
-  url: getFullnodeUrl(NETWORK),
-});
-
-/* Local storage keys */
-
-const ZKLOGIN_SETUP = "zklogin-demo.setup";
-const ZKLOGIN_ACCONTS = "zklogin-demo.accounts";
-
-
-const Home = () => {
-  const [balances, setBalances] = useState<Map<string, number>>(new Map()); // Map<Sui address, SUI balance>
-  const [modalContent, setModalContent] = useState<string>("");
-  const [setupData, setSetupData] = useLocalStorage<SetupData | null>(ZKLOGIN_SETUP, null)
-  const [accounts, setAccounts] = useLocalStorage<AccountData[]>(ZKLOGIN_ACCONTS, [])
-
+  const styles = {
+    compose: {
+      background: "url('/login/background.png') center / cover no-repeat",
+      width: "100vw",
+      height: "100vh",
+      boxSizing: "border-box",
+      display: "flex",
+      flexDirection: "column",
+      justifyContent: "space-between",
+    },
+    contentTop: {
+      paddingTop: "10vh",
+    },
+    contentBottom: {
+      paddingBottom: "10vh",
+    },
+  };
 
   useEffect(() => {
-    completeZkLogin();
-    fetchBalances(accounts);
-    const interval = setInterval(() => fetchBalances(accounts), 60_000);
-    return () => clearInterval(interval);
-  }, []);
+    localStorage.setItem("colors", JSON.stringify(colors));
+  }, [colors]);
 
-  /* zkLogin logic */
+  const splitObjectId = (objectId: string) => {
+    const str = objectId.slice(2);
+    const length = str.length;
+    const partLength = Math.ceil(length / 6);
+    const parts = [];
 
-  // https://docs.sui.io/build/zk_login#set-up-oauth-flow
-  async function beginZkLogin(provider: OpenIdProvider) {
-    setModalContent(`🔑 Logging in with ${provider}...`);
+    for (let i = 0; i < 6; i++) {
+      parts.push(str.slice(i * partLength, (i + 1) * partLength));
+    }
 
-    // Create a nonce
-    const { epoch } = await suiClient.getLatestSuiSystemState();
-    const maxEpoch = Number(epoch) + MAX_EPOCH; // the ephemeral key will be valid for MAX_EPOCH from now
-    console.log({ maxEpoch });
-    const randomness = generateRandomness();
-    const ephemeralKeyPair = new Ed25519Keypair();
-    const nonce = generateNonce(
+    return parts;
+  };
+
+  const executeTx = async () => {
+    const sponsoredResponse = await sponsorTransactionE2E();
+    const { signature } = await wallet.signTransactionBlock({
       // @ts-ignore
-      ephemeralKeyPair.getPublicKey(),
-      maxEpoch,
-      randomness
-    );
-
-    // Save data to local storage so completeZkLogin() can use it after the redirect
-    setSetupData({
-      provider,
-      maxEpoch,
-      randomness: randomness.toString(),
-      ephemeralPublicKey: toBigIntBE(
-        Buffer.from(ephemeralKeyPair.getPublicKey().toSuiBytes())
-      ).toString(),
-      ephemeralPrivateKey: ephemeralKeyPair.export().privateKey,
+      transactionBlock: TransactionBlock.from(sponsoredResponse.txBytes),
     });
+    console.log({ signature });
+    const executeResponse = await suiClient.executeTransactionBlock({
+      transactionBlock: sponsoredResponse.txBytes,
+      signature: [signature, sponsoredResponse.signature],
+      options: { showEffects: true },
+      requestType: "WaitForLocalExecution",
+    });
+    console.log({ executeResponse });
+    console.log("Execution Status:", executeResponse.effects?.status.status);
+    const url = `https://suiexplorer.com/txblock/${executeResponse.digest}?network=testnet`;
+    console.log(url);
+  };
 
-    const REDIRECT_URI = window.location.origin;
+  const exctuteMintNFT = async () => {
+    setMessage("");
+    const txb = new TransactionBlock();
+    try {
+      moveCallMintNft(txb, {
+        origin_name: "wasabi",
+        origin_description: "wasabi's icon",
+        origin_url:
+          "https://pbs.twimg.com/profile_images/1538981748478214144/EUjTgb0v_400x400.jpg",
+        item_name: "jiro",
+        item_description: "a",
+        item_url:
+          "https://toy.bandai.co.jp/assets/tamagotchi/images/chopper/img_chara01.png",
+        date: "2023/10/30",
+      });
+      const gaslessPayloadBytes = await txb.build({
+        provider: suiClient,
+        onlyTransactionKind: true,
+      });
+      console.log({ gaslessPayloadBytes });
 
-    // Start the OAuth flow with the OpenID provider
-    const urlParamsBase = {
-      nonce: nonce,
-      state: new URLSearchParams({
-        redirect_uri: REDIRECT_URI,
-      }).toString(),
-      //   redirect_uri: window.location.origin + "/login",
-      redirect_uri: "https://zklogin-dev-redirect.vercel.app/api/auth",
-      response_type: "id_token",
-      scope: "openid",
-    };
-    let loginUrl: string;
-    switch (provider) {
-      case "Google": {
-        const urlParams = new URLSearchParams({
-          ...urlParamsBase,
-          client_id: config.CLIENT_ID_GOOGLE,
-        });
-        loginUrl = `https://accounts.google.com/o/oauth2/v2/auth?${urlParams}`;
-        break;
-      }
-      case "Twitch": {
-        const urlParams = new URLSearchParams({
-          ...urlParamsBase,
-          client_id: config.CLIENT_ID_TWITCH,
-          force_verify: "true",
-          lang: "en",
-          login_type: "login",
-        });
-        loginUrl = `https://id.twitch.tv/oauth2/authorize?${urlParams}`;
-        break;
-      }
-      case "Facebook": {
-        const urlParams = new URLSearchParams({
-          ...urlParamsBase,
-          client_id: config.CLIENT_ID_FACEBOOK,
-        });
-        loginUrl = `https://www.facebook.com/v18.0/dialog/oauth?${urlParams}`;
-        break;
-      }
-    }
-    window.location.replace(loginUrl);
-  }
+      const gaslessPayloadBase64 = btoa(
+        gaslessPayloadBytes.reduce(
+          (data, byte) => data + String.fromCharCode(byte),
+          ""
+        )
+      );
 
-  async function completeZkLogin() {
-    // Validate the JWT
-    // https://docs.sui.io/build/zk_login#decoding-jwt
-    const urlFragment = window.location.hash.substring(1);
-    const urlParams = new URLSearchParams(urlFragment);
-    const jwt = urlParams.get("id_token");
-    if (!jwt) {
-      return;
-    }
-    window.history.replaceState(null, "", window.location.pathname); // remove URL fragment
-    const jwtPayload = decodeJwt(jwt);
-    if (!jwtPayload.sub || !jwtPayload.aud) {
-      console.warn("[completeZkLogin] missing jwt.sub or jwt.aud");
-      return;
-    }
+      console.log('#34', { gaslessPayloadBase64 });
 
-    // Get a Sui address for the user
-    // https://docs.sui.io/build/zk_login#user-salt-management
-    // https://docs.sui.io/build/zk_login#get-the-users-sui-address
-    // const saltResponse: any = await fetch(proxy(config.URL_SALT_SERVICE), {
-    //   method: "POST",
-    //   headers: { "Content-Type": "application/json" },
-    //   body: JSON.stringify({ jwt }),
-    // })
-    //   .then((res) => {
-    //     console.debug("[completeZkLogin] salt service success");
-    //     return res.json();
-    //   })
-    //   .catch((error) => {
-    //     console.warn("[completeZkLogin] salt service error:", error);
-    //     return null;
-    //   });
-    // if (!saltResponse) {
-    //   return;
-    // }
-    // const userSalt = BigInt(saltResponse.salt);
-    const userSalt = "";
-    const userAddr = jwtToAddress(jwt, userSalt);
-
-    if (!setupData) return
-
-    const payloadObject = {
-      maxEpoch: setupData.maxEpoch,
-      jwtRandomness: setupData.randomness,
-      extendedEphemeralPublicKey: setupData.ephemeralPublicKey,
-      jwt,
-      salt: userSalt.toString(),
-      keyClaimName: "sub",
-    };
-    const payload = JSON.stringify(payloadObject);
-    console.log({ payload });
-    console.log(config.URL_ZK_PROVER);
-    console.debug("[completeZkLogin] Requesting ZK proof with:", payload);
-
-    async function sendRequest() {
-      const url = "https://prover.umilabs.org/v1";
-      const headers = {
-        "Content-Type": "application/json",
-      };
-      const body = payload;
-
-      try {
-        const response = await fetch(url, {
-          method: "POST",
-          headers: headers,
-          body: body,
-        });
-        const zkProofs = await response.json();
-        console.log(zkProofs);
-
-        setAccounts({
-          // @ts-ignore
-          provider: setupData!.provider,
-          userAddr,
-          zkProofs,
-          ephemeralPublicKey: setupData!.ephemeralPublicKey,
-          ephemeralPrivateKey: setupData!.ephemeralPrivateKey,
-          userSalt: userSalt.toString(),
-          sub: jwtPayload.sub!,
-          aud:
-            typeof jwtPayload.aud === "string"
-              ? jwtPayload.aud
-              : jwtPayload.aud![0],
-          maxEpoch: setupData!.maxEpoch,
-        });
-        // router.push("/account");
-      } catch (error) {
-        console.error("Error:", error);
+      if (!wallet.account || !wallet.account.address) {
+        console.error("Wallet address is undefined");
         return;
       }
-    }
 
-    sendRequest();
-  }
+      console.log('#35', wallet.account.address)
 
-  async function transfer_zkl(account: AccountData) {
-    const destAddr = '0x1af1728adfd0286249259b3e5bcc0ce573a10ac7e5dd114fae7133f56f367e02';
-    // const account = accounts.current[0];
-
-    const txb = new TransactionBlock();
-    txb.setSender(account.userAddr);
-    const c = txb.splitCoins(txb.gas, [txb.pure(5e6)]);
-    txb.transferObjects([c], txb.pure(destAddr));
-
-    const ephemeralKeyPair = Ed25519Keypair.fromSecretKey(
-      Buffer.from(account.ephemeralPrivateKey, "base64")
-    );
-
-    console.log({ ephemeralKeyPair });
-
-    const { bytes, signature: userSignature } = await txb.sign({
-      client: suiClient,
-      signer: ephemeralKeyPair,
-    });
-
-    console.log({ bytes });
-    // console.log(sponsoredResponse.txBytes);
-    // console.log(bytes === sponsoredResponse.txBytes);
-    console.log({ userSignature });
-
-    // Generate an address seed by combining userSalt, sub (subject ID), and aud (audience).
-    const addressSeed = genAddressSeed(
-      BigInt(account.userSalt),
-      "sub",
-      account.sub,
-      account.aud
-    ).toString();
-
-    console.log(account.zkProofs);
-    console.log(account.maxEpoch);
-
-    // Serialize the zkLogin signature by combining the ZK proof (inputs), the maxEpoch,
-    // and the ephemeral signature (userSignature).
-    const zkLoginSignature: SerializedSignature = getZkLoginSignature({
-      inputs: {
-        ...account.zkProofs,
-        addressSeed,
-      },
-      maxEpoch: account.maxEpoch,
-      userSignature,
-    });
-
-    console.log({ zkLoginSignature });
-    // console.log(sponsoredResponse.signature);
-
-    // Execute the transaction
-    const r = await suiClient
-      .executeTransactionBlock({
-        transactionBlock: bytes,
-        signature: [zkLoginSignature],
-        requestType: "WaitForLocalExecution",
-        options: {
-          showEffects: true,
-        },
-      });
-
-    console.log('r', r);
-  }
-
-  async function transfer_zkl_stx(account: AccountData) {
-    const destAddr = '0x1af1728adfd0286249259b3e5bcc0ce573a10ac7e5dd114fae7133f56f367e02';
-    // const account = accounts.current[0];
-
-    const coins = await suiClient.getAllCoins({ owner: account.userAddr });
-    const sui = coins.data.find(d => d.coinType === '0x2::sui::SUI');
-
-    const txb = new TransactionBlock();
-    txb.setSender(account.userAddr);
-    const c = txb.splitCoins(txb.pure(sui?.coinObjectId), [txb.pure(5e6)]);
-    txb.transferObjects([c], txb.pure(destAddr));
-
-    const payloadBytes = await txb.build({
-      provider: suiClient,
-      onlyTransactionKind: true,
-    });
-
-    const payloadBase64 = btoa(
-      payloadBytes.reduce(
-        (data, byte) => data + String.fromCharCode(byte),
-        ""
-      )
-    );
-    const sponsoredResponse = await sponsor.gas_sponsorTransactionBlock(
-      payloadBase64,
-      account.userAddr,
-      GAS_BUDGET,
-    );
-
-    const sponsoredStatus =
-      await sponsor.gas_getSponsoredTransactionBlockStatus(
-        sponsoredResponse.txDigest
+      const sponsoredResponse = await sponsor.gas_sponsorTransactionBlock(
+        gaslessPayloadBase64,
+        wallet.account.address,
+        GAS_BUDGET,
       );
-    console.log("Sponsorship Status:", sponsoredStatus);
 
-    const ephemeralKeyPair = Ed25519Keypair.fromSecretKey(
-      Buffer.from(account.ephemeralPrivateKey, "base64")
-    );
-    console.log({ ephemeralKeyPair });
+      console.log('#36', { sponsoredResponse });
 
-    const { bytes, signature: userSignature } = await txb.sign({
-      client: suiClient,
-      signer: ephemeralKeyPair,
-    });
-
-    console.log({ bytes });
-    // console.log(sponsoredResponse.txBytes);
-    // console.log(bytes === sponsoredResponse.txBytes);
-    console.log({ userSignature });
-
-    // Generate an address seed by combining userSalt, sub (subject ID), and aud (audience).
-    const addressSeed = genAddressSeed(
-      BigInt(account.userSalt),
-      "sub",
-      account.sub,
-      account.aud
-    ).toString();
-
-    console.log(account.zkProofs);
-    console.log(account.maxEpoch);
-
-    // Serialize the zkLogin signature by combining the ZK proof (inputs), the maxEpoch,
-    // and the ephemeral signature (userSignature).
-    const zkLoginSignature: SerializedSignature = getZkLoginSignature({
-      inputs: {
-        ...account.zkProofs,
-        addressSeed,
-      },
-      maxEpoch: account.maxEpoch,
-      userSignature,
-    });
-
-    console.log({ zkLoginSignature });
-    // console.log(sponsoredResponse.signature);
-
-    // Execute the transaction
-    const r = await suiClient
-      .executeTransactionBlock({
-        transactionBlock: bytes,
-        signature: [zkLoginSignature, sponsoredResponse.signature],
-        requestType: "WaitForLocalExecution",
-        options: {
-          showEffects: true,
-        },
-      });
-
-    console.log('r', r);
-  }
-
-
-  // Assemble a zkLogin signature and submit a transaction
-  // https://docs.sui.io/build/zk_login#assemble-the-zklogin-signature-and-submit-the-transaction
-  async function sendTransaction(account: AccountData) {
-    console.log(account);
-    setModalContent("🚀 Sending transaction...");
-
-    // Sign the transaction bytes with the ephemeral private key.
-    const txb = new TransactionBlock();
-    txb.setSender(account.userAddr);
-    const gaslessTxb = await moveCallMintNft({
-      origin_name: "wasabi",
-      origin_description: "wasabi's icon",
-      origin_url:
-        "https://pbs.twimg.com/profile_images/1538981748478214144/EUjTgb0v_400x400.jpg",
-      item_name: "jiro",
-      item_description: "a",
-      item_url:
-        "https://toy.bandai.co.jp/assets/tamagotchi/images/chopper/img_chara01.png",
-      date: "2023/10/30",
-    });
-    const gaslessPayloadBytes = await gaslessTxb.build({
-      provider: suiClient,
-      onlyTransactionKind: true,
-    });
-    console.log({ gaslessPayloadBytes });
-
-    const gaslessPayloadBase64 = btoa(
-      gaslessPayloadBytes.reduce(
-        (data, byte) => data + String.fromCharCode(byte),
-        ""
-      )
-    );
-
-    // console.log(account.userAddr);
-
-    gaslessTxb.setSender(account.userAddr);
-    // gaslessTxb.setGasOwner(sponsor.toSuiAddress());
-    // gaslessTxb.setGasOwner(
-    //   "0xc30e760a16c0e1cd27b4890b0b1a7b2bcb55e84194a081a4b880c9a0f8fd9a4f"
-    // );
-
-    console.log({ gaslessPayloadBase64 });
-
-    const sponsoredResponse = await sponsor.gas_sponsorTransactionBlock(
-      gaslessPayloadBase64,
-      account.userAddr,
-      GAS_BUDGET,
-    );
-
-    console.log({ sponsoredResponse });
-
-    const sponsoredStatus =
-      await sponsor.gas_getSponsoredTransactionBlockStatus(
-        sponsoredResponse.txDigest
-      );
-    console.log("Sponsorship Status:", sponsoredStatus);
-
-    const ephemeralKeyPair = Ed25519Keypair.fromSecretKey(
-      Buffer.from(account.ephemeralPrivateKey, "base64")
-    );
-
-    console.log({ ephemeralKeyPair });
-
-    const { bytes, signature: userSignature } = await gaslessTxb.sign({
-      client: suiClient,
-      signer: ephemeralKeyPair,
-    });
-
-    console.log({ bytes });
-    console.log(sponsoredResponse.txBytes);
-    console.log(bytes === sponsoredResponse.txBytes);
-    console.log({ userSignature });
-
-    // Generate an address seed by combining userSalt, sub (subject ID), and aud (audience).
-    const addressSeed = genAddressSeed(
-      BigInt(account.userSalt),
-      "sub",
-      account.sub,
-      account.aud
-    ).toString();
-
-    console.log(account.zkProofs);
-
-    console.log(account.maxEpoch);
-
-    // Serialize the zkLogin signature by combining the ZK proof (inputs), the maxEpoch,
-    // and the ephemeral signature (userSignature).
-    const zkLoginSignature: SerializedSignature = getZkLoginSignature({
-      inputs: {
-        ...account.zkProofs,
-        addressSeed,
-      },
-      maxEpoch: account.maxEpoch,
-      userSignature,
-    });
-
-    console.log({ zkLoginSignature });
-    console.log(sponsoredResponse.signature);
-
-    // Execute the transaction
-    await suiClient
-      .executeTransactionBlock({
-        transactionBlock: bytes,
-        signature: [zkLoginSignature, sponsoredResponse.signature],
-        // signature: [userSignature, sponsoredResponse.signature],
-        requestType: "WaitForLocalExecution",
-        options: {
-          showEffects: true,
-        },
-      })
-      .then((result) => {
-        console.debug(
-          "[sendTransaction] executeTransactionBlock response:",
-          result
+      const sponsoredStatus =
+        await sponsor.gas_getSponsoredTransactionBlockStatus(
+          sponsoredResponse.txDigest
         );
-        fetchBalances([account]);
-      })
-      .catch((error) => {
-        console.warn(
-          "[sendTransaction] executeTransactionBlock failed:",
-          error
+
+      console.log("Sponsorship Status:", sponsoredStatus);
+      const { signature } = await wallet.signTransactionBlock({
+        // @ts-ignore
+        transactionBlock: TransactionBlock.from(sponsoredResponse.txBytes),
+      });
+      console.log({ signature });
+      const executeResponse = await suiClient.executeTransactionBlock({
+        transactionBlock: sponsoredResponse.txBytes,
+        signature: [signature, sponsoredResponse.signature],
+        options: { showEffects: true, showObjectChanges: true },
+        requestType: "WaitForLocalExecution",
+      });
+      console.log({ executeResponse });
+
+      if (executeResponse.effects?.status.status === "success") {
+        const matchingObject = executeResponse.objectChanges?.find(
+          // @ts-ignore
+          (obj) => obj?.objectType === CoCoNFT.$typeName
         );
-        return null;
-      })
-      .finally(() => {
-        setModalContent("");
-      });
-  }
 
-  // Get the SUI balance for each account
-  async function fetchBalances(accounts: AccountData[]) {
-    if (accounts.length == 0) {
-      return;
+        if (matchingObject) {
+          // @ts-ignore
+          setObjectId(matchingObject.objectId);
+          // @ts-ignore
+          console.log(matchingObject.objectId);
+          // @ts-ignore
+          localStorage.setItem("objectId", matchingObject.objectId);
+          // @ts-ignore
+          const parts = splitObjectId(matchingObject.objectId);
+          console.log({ parts });
+          const result = parseInt("0xcf2ff2a39", 16);
+          console.log(result);
+          setColors({
+            l1: parseInt(parts[0], 16),
+            l2: parseInt(parts[1], 16),
+            l3: parseInt(parts[2], 16),
+            r1: parseInt(parts[3], 16),
+            r2: parseInt(parts[4], 16),
+            r3: parseInt(parts[5], 16),
+          });
+          console.log({ colors });
+          console.log(
+            "Execution Status:",
+            executeResponse.effects?.status.status
+          );
+          const url = `https://suiexplorer.com/txblock/${executeResponse.digest}?network=testnet`;
+          console.log(url);
+          setMessage(`Mint Success! : ${url}`);
+          // localStorage.setItem("colors", JSON.stringify(colors));
+          router.push("/coin");
+        }
+      }
+    } catch (err) {
+      console.log("err:", err);
+      setMessage(`Mint failed ${err}`);
     }
-    const newBalances: Map<string, number> = new Map();
-    for (const account of accounts) {
-      const suiBalance = await suiClient.getBalance({
-        owner: account.userAddr,
-        coinType: "0x2::sui::SUI",
-      });
-      newBalances.set(
-        account.userAddr,
-        +suiBalance.totalBalance / 1_000_000_000
-      );
+  };
+
+  const handleButtonClick = async () => {
+    setLoading(true);
+    try {
+      await exctuteMintNFT();
+    } catch (error) {
+      console.error("Error executing sponsorTransactionE2E:", error);
+    } finally {
+      setLoading(false);
     }
-    setBalances((prevBalances) => new Map([...prevBalances, ...newBalances]));
-  }
+  };
 
-
-  /* HTML */
-
-  const openIdProviders: OpenIdProvider[] = ["Google", "Twitch", "Facebook"];
   return (
-    <div id="page" className="min-h-screen bg-gray-100 p-8">
-      <Modal content={modalContent} />
-      <div id="network-indicator" className="mb-4">
-        <label className="text-lg font-bold">{NETWORK}</label>
+    // <header className="flex justify-end items-start w-full hidden">
+    //   <ConnectButton />
+    // </header>
+    // @ts-ignore
+    <div style={styles.compose}>
+      <div style={styles.contentTop}>
+        <p
+          className={`${style.mySpecialFont} text-center text-white text-4xl mt-5`}
+        >
+          POAP by zkLogin
+        </p>
+        <p
+          className={`${style.mySpecialFont} mt-5 text-center text-white text-3xl font-bold leading-9`}
+        >
+          Sponsored Transaction,
+          <br />
+          Dynamic / Composable NFT
+          <br />
+        </p>
+        <p
+          className={`${style.mySpecialFont} mt-3 text-center text-white text-3xl font-bold leading-9`}
+        >
+          <span className="text-2xl">presented by</span> Umi Labs
+        </p>
       </div>
-      <h1 className="text-2xl font-bold mb-4">Sui zkLogin demo</h1>
-      <div id="login-buttons" className="section mb-8">
-        <h2 className="text-xl font-bold mb-2">Log in:</h2>
-        {openIdProviders.map((provider) => (
-          <button
-            className={`btn-login text-black font-bold py-2 px-4 rounded border border-gray-300 ${provider}`}
-            onClick={() => beginZkLogin(provider)}
-            key={provider}
-          >
-            {provider}
-          </button>
-        ))}
-      </div>
-      <div id="accounts" className="section">
-        <h2 className="text-xl font-bold mb-2">Accounts:</h2>
-        {accounts.map((acct) => {
-          const balance = balances.get(acct.userAddr);
-          const explorerLink = linkToExplorer(
-            NETWORK,
-            "address",
-            acct.userAddr
-          );
-          return (
-            <div
-              className="account bg-white p-4 rounded mb-4 shadow"
-              key={acct.userAddr}
-            >
-              <div className="mb-2">
-                <label
-                  className={`provider text-lg font-bold ${acct.provider}`}
-                >
-                  {acct.provider}
-                </label>
-              </div>
-              <div className="mb-2">
-                Address:{" "}
-                <a
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  href={explorerLink}
-                  className="text-blue-500 hover:underline"
-                >
-                  {shortenAddress(acct.userAddr)}
-                </a>
-              </div>
-              <div className="mb-2">User ID: {acct.sub}</div>
-              <div className="mb-2">
-                Balance:{" "}
-                {typeof balance === "undefined"
-                  ? "(loading)"
-                  : `${balance} SUI`}
-              </div>
-              <button
-                className="btn-send py-2 px-4 mr-4 rounded bg-blue-500 text-white hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
-                // disabled={!balance}
-                onClick={() => sendTransaction(acct)}
-              >
-                Mint
-              </button>
-              <button
-                className="btn-send py-2 px-4 mr-4 rounded bg-blue-500 text-white hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
-                // disabled={!balance}
-                onClick={() => transfer_zkl(acct)}
-              >
-                transfer_zkl
-              </button>
-              <button
-                className="btn-send py-2 px-4 mr-4 rounded bg-blue-500 text-white hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
-                // disabled={!balance}
-                onClick={() => transfer_zkl_stx(acct)}
-              >
-                transfer_zkl_stx
-              </button>
-              <hr className="my-4" />
-            </div>
-          );
-        })}
+      <div
+        className="flex flex-col justify-center items-center"
+        style={styles.contentBottom}
+      >
+        <button
+          onClick={async (event: any) => {
+            event.preventDefault();
+            await handleButtonClick();
+          }}
+          className={`bg-gray-500 hover:bg-gray-700 text-white py-3 px-5 rounded-2xl text-xl ${style.myRobotoFont}`}
+          disabled={loading}
+        >
+          {loading ? "Loading..." : "Mint"}
+        </button>
       </div>
     </div>
   );
-};
-
-// Modal copied from https://github.com/juzybits/polymedia-timezones
-const Modal: React.FC<{
-  content: React.ReactNode;
-}> = ({ content }) => {
-  if (!content) {
-    return null;
-  }
-
-  return (
-    <div className="modal-background">
-      <div className="modal-content">{content}</div>
-    </div>
-  );
-};
-
-function shortenAddress(address: string): string {
-  return "0x" + address.slice(2, 8) + "..." + address.slice(-6);
 }
-
-export default Home;
