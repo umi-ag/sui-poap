@@ -21,8 +21,8 @@ import { moveCallMintNft } from "@/libs/movecall";
 import { SENDER_ADDRESS, GAS_BUDGET, sponsor, suiProvider } from "@/config/sui";
 
 import config from "@/config/config.json";
-const NETWORK = "devnet";
-const MAX_EPOCH = 1000; // keep ephemeral keys active for this many Sui epochs from now (1 epoch ~= 24h)
+const NETWORK = "mainnet";
+const MAX_EPOCH = 1; // keep ephemeral keys active for this many Sui epochs from now (1 epoch ~= 24h)
 
 const suiClient = new SuiClient({
   url: getFullnodeUrl(NETWORK),
@@ -43,7 +43,7 @@ export const Home = () => {
     completeZkLogin();
 
     fetchBalances(accounts.current);
-    const interval = setInterval(() => fetchBalances(accounts.current), 6_000);
+    const interval = setInterval(() => fetchBalances(accounts.current), 60_000);
     return () => clearInterval(interval);
   }, []);
 
@@ -233,9 +233,164 @@ export const Home = () => {
     sendRequest();
   }
 
+  async function transfer_zkl(account: AccountData) {
+    const destAddr = '0x1af1728adfd0286249259b3e5bcc0ce573a10ac7e5dd114fae7133f56f367e02';
+    // const account = accounts.current[0];
+
+    const txb = new TransactionBlock();
+    txb.setSender(account.userAddr);
+    const c = txb.splitCoins(txb.gas, [txb.pure(5e6)]);
+    txb.transferObjects([c], txb.pure(destAddr));
+
+    const ephemeralKeyPair = Ed25519Keypair.fromSecretKey(
+      Buffer.from(account.ephemeralPrivateKey, "base64")
+    );
+
+    console.log({ ephemeralKeyPair });
+
+    const { bytes, signature: userSignature } = await txb.sign({
+      client: suiProvider,
+      signer: ephemeralKeyPair,
+    });
+
+    console.log({ bytes });
+    // console.log(sponsoredResponse.txBytes);
+    // console.log(bytes === sponsoredResponse.txBytes);
+    console.log({ userSignature });
+
+    // Generate an address seed by combining userSalt, sub (subject ID), and aud (audience).
+    const addressSeed = genAddressSeed(
+      BigInt(account.userSalt),
+      "sub",
+      account.sub,
+      account.aud
+    ).toString();
+
+    console.log(account.zkProofs);
+    console.log(account.maxEpoch);
+
+    // Serialize the zkLogin signature by combining the ZK proof (inputs), the maxEpoch,
+    // and the ephemeral signature (userSignature).
+    const zkLoginSignature: SerializedSignature = getZkLoginSignature({
+      inputs: {
+        ...account.zkProofs,
+        addressSeed,
+      },
+      maxEpoch: account.maxEpoch,
+      userSignature,
+    });
+
+    console.log({ zkLoginSignature });
+    // console.log(sponsoredResponse.signature);
+
+    // Execute the transaction
+    const r = await suiProvider
+      .executeTransactionBlock({
+        transactionBlock: bytes,
+        signature: [zkLoginSignature],
+        requestType: "WaitForLocalExecution",
+        options: {
+          showEffects: true,
+        },
+      });
+
+    console.log('r', r);
+  }
+
+  async function transfer_zkl_stx(account: AccountData) {
+    const destAddr = '0x1af1728adfd0286249259b3e5bcc0ce573a10ac7e5dd114fae7133f56f367e02';
+    // const account = accounts.current[0];
+
+    const coins = await suiProvider.getAllCoins({ owner: account.userAddr });
+    const sui = coins.data.find(d => d.coinType === '0x2::sui::SUI');
+
+    const txb = new TransactionBlock();
+    txb.setSender(account.userAddr);
+    const c = txb.splitCoins(txb.pure(sui?.coinObjectId), [txb.pure(5e6)]);
+    txb.transferObjects([c], txb.pure(destAddr));
+
+    const payloadBytes = await txb.build({
+      provider: suiProvider,
+      onlyTransactionKind: true,
+    });
+
+    const payloadBase64 = btoa(
+      payloadBytes.reduce(
+        (data, byte) => data + String.fromCharCode(byte),
+        ""
+      )
+    );
+    const sponsoredResponse = await sponsor.gas_sponsorTransactionBlock(
+      payloadBase64,
+      account.userAddr,
+      GAS_BUDGET
+    );
+
+    const sponsoredStatus =
+      await sponsor.gas_getSponsoredTransactionBlockStatus(
+        sponsoredResponse.txDigest
+      );
+    console.log("Sponsorship Status:", sponsoredStatus);
+
+    const ephemeralKeyPair = Ed25519Keypair.fromSecretKey(
+      Buffer.from(account.ephemeralPrivateKey, "base64")
+    );
+    console.log({ ephemeralKeyPair });
+
+    const { bytes, signature: userSignature } = await txb.sign({
+      client: suiProvider,
+      signer: ephemeralKeyPair,
+    });
+
+    console.log({ bytes });
+    // console.log(sponsoredResponse.txBytes);
+    // console.log(bytes === sponsoredResponse.txBytes);
+    console.log({ userSignature });
+
+    // Generate an address seed by combining userSalt, sub (subject ID), and aud (audience).
+    const addressSeed = genAddressSeed(
+      BigInt(account.userSalt),
+      "sub",
+      account.sub,
+      account.aud
+    ).toString();
+
+    console.log(account.zkProofs);
+    console.log(account.maxEpoch);
+
+    // Serialize the zkLogin signature by combining the ZK proof (inputs), the maxEpoch,
+    // and the ephemeral signature (userSignature).
+    const zkLoginSignature: SerializedSignature = getZkLoginSignature({
+      inputs: {
+        ...account.zkProofs,
+        addressSeed,
+      },
+      maxEpoch: account.maxEpoch,
+      userSignature,
+    });
+
+    console.log({ zkLoginSignature });
+    // console.log(sponsoredResponse.signature);
+
+    // Execute the transaction
+    const r = await suiProvider
+      .executeTransactionBlock({
+        transactionBlock: bytes,
+        signature: [zkLoginSignature, sponsoredResponse.signature],
+        requestType: "WaitForLocalExecution",
+        options: {
+          showEffects: true,
+        },
+      });
+
+    console.log('r', r);
+  }
+
+
   // Assemble a zkLogin signature and submit a transaction
   // https://docs.sui.io/build/zk_login#assemble-the-zklogin-signature-and-submit-the-transaction
   async function sendTransaction(account: AccountData) {
+    console.log(account);
     setModalContent("🚀 Sending transaction...");
 
     // Sign the transaction bytes with the ephemeral private key.
@@ -482,11 +637,25 @@ export const Home = () => {
                   : `${balance} SUI`}
               </div>
               <button
-                className="btn-send py-2 px-4 rounded bg-blue-500 text-white hover:bg-blue-700"
-                disabled={!balance}
+                className="btn-send py-2 px-4 mr-4 rounded bg-blue-500 text-white hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                // disabled={!balance}
                 onClick={() => sendTransaction(acct)}
               >
                 Mint
+              </button>
+              <button
+                className="btn-send py-2 px-4 mr-4 rounded bg-blue-500 text-white hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                // disabled={!balance}
+                onClick={() => transfer_zkl(acct)}
+              >
+                transfer_zkl
+              </button>
+              <button
+                className="btn-send py-2 px-4 mr-4 rounded bg-blue-500 text-white hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                // disabled={!balance}
+                onClick={() => transfer_zkl_stx(acct)}
+              >
+                transfer_zkl_stx
               </button>
               <hr className="my-4" />
             </div>
