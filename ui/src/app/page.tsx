@@ -107,12 +107,14 @@ export default function Home() {
         )
       );
 
-      console.log({ gaslessPayloadBase64 });
+      console.log('#34', { gaslessPayloadBase64 });
 
       if (!wallet.account || !wallet.account.address) {
         console.error("Wallet address is undefined");
         return;
       }
+
+      console.log('#35', wallet.account.address)
 
       const sponsoredResponse = await sponsor.gas_sponsorTransactionBlock(
         gaslessPayloadBase64,
@@ -120,12 +122,13 @@ export default function Home() {
         GAS_BUDGET,
       );
 
-      console.log({ sponsoredResponse });
+      console.log('#36', { sponsoredResponse });
 
       const sponsoredStatus =
         await sponsor.gas_getSponsoredTransactionBlockStatus(
           sponsoredResponse.txDigest
         );
+
       console.log("Sponsorship Status:", sponsoredStatus);
       const { signature } = await wallet.signTransactionBlock({
         // @ts-ignore
