@@ -63,21 +63,23 @@ export const moveCallSponsored = async (
     onlyTransactionKind: true,
   });
 
-  // const sponsoredResponse = await fetch("/api/sponsor", {
-  //   method: "POST",
-  //   headers: {
-  //     "Content-Type": "application/json",
-  //   },
-  //   body: JSON.stringify({
-  //     payloadBytes,
-  //     userAddress: account.userAddr,
-  //   }),
-  // });
+  console.log('## 2001', payloadBytes)
 
-  const sponsoredResponse  = await fetchSponsoredTransaction(
-    payloadBytes,
-    account.userAddr,
-  );
+  const sponsoredResponse = await fetch("/api/sponsor", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      payloadBytes: Buffer.from(payloadBytes).toString('hex'),
+      userAddress: account.userAddr,
+    }),
+  });
+
+  // const sponsoredResponse  = await fetchSponsoredTransaction(
+  //   payloadBytes,
+  //   account.userAddr,
+  // );
 
   alert("##1");
   console.log("sponsoredResponse", sponsoredResponse);

@@ -3,6 +3,11 @@ import { handle } from 'hono/vercel'
 import { SponsorRpc } from 'src/types';
 import { rpcClient } from 'typed-rpc';
 
+export const config = {
+  runtime: 'edge'
+}
+
+
 const shinamiAccountKey = "sui_mainnet_a3d005b4000b794b178162d50c7e2965";
 const shinamiProviderUrl =
   `https://api.shinami.com/gas/v1/${shinamiAccountKey}`;
@@ -12,6 +17,8 @@ const fetchSponsoredTransaction = async (
   payloadBytes: Uint8Array,
   userAddress: string,
 ) => {
+  console.log('## 1413', payloadBytes)
+
   const payloadBase64 = btoa(
     payloadBytes.reduce((data, byte) => data + String.fromCharCode(byte), ""),
   );
@@ -33,11 +40,6 @@ const fetchSponsoredTransaction = async (
   return sponsoredResponse
 };
 
-
-export const config = {
-  runtime: 'edge'
-}
-
 const app = new Hono().basePath('/api')
 
 app.post('/sponsor', async (c) => {
@@ -45,8 +47,9 @@ app.post('/sponsor', async (c) => {
 
   console.log({ body })
 
+  const payloadBytes = new Uint8Array(Buffer.from(body.payloadBytes, 'hex'));
   const sponsoredResponse = await fetchSponsoredTransaction(
-    body.payloadBytes,
+    payloadBytes,
     body.userAddress,
   );
   return c.json(sponsoredResponse)
