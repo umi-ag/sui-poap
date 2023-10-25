@@ -46,4 +46,4 @@ export async function POST(req: Request) {
   return Response.json(sponsoredResponse);
 }
 
-export const runtime = 'edge';
+// export const runtime = 'edge';
