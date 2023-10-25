@@ -1,0 +1,114 @@
+@import url("https://fonts.googleapis.com/css2?family=Climate+Crisis&family=Edu+QLD+Beginner:wght@400;700&family=Genos:wght@400;700&family=Lalezar&family=Mochiy+Pop+One&family=Teko&family=Tilt+Prism&family=Tourney&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.text-frostend {
+  background: linear-gradient(
+    to bottom,
+    #0047ab,
+    #01b5fd,
+    #d1fffd
+  ); /* 上部: 濃い青, 下部: 白めの青 */
+  color: transparent;
+  background-clip: text;
+  -webkit-background-clip: text;
+}
+
+/* tailwind.config.css */
+@layer components {
+  .snowflake {
+    @apply text-white font-sans absolute bg-transparent;
+    animation-name: snowflakes-fall, snowflakes-shake;
+    font-size: calc(0.5em + 1vmin); /* この行を追加 */
+  }
+
+  .snowflakes-fall {
+    @apply animate-snowflakes-fall;
+  }
+
+  .snowflakes-shake {
+    @apply animate-snowflakes-shake;
+  }
+
+  .snowflake-0 {
+    @apply left-1/12;
+    animation-delay: 0s, 0s;
+  }
+
+  .snowflake-1 {
+    @apply left-2/12;
+    animation-delay: 1s, 1s;
+  }
+
+  .snowflake-2 {
+    @apply left-3/12;
+    animation-delay: 2s, 0.5s;
+  }
+
+  .snowflake-3 {
+    @apply left-4/12;
+    animation-delay: 3s, 1.5s;
+  }
+
+  .snowflake-4 {
+    @apply left-5/12;
+    animation-delay: 4s, 2s;
+  }
+
+  .snowflake-5 {
+    @apply left-6/12;
+    animation-delay: 5s, 2.5s;
+  }
+
+  .snowflake-6 {
+    @apply left-7/12;
+    animation-delay: 6s, 3s;
+  }
+
+  .snowflake-7 {
+    @apply left-8/12;
+    animation-delay: 7s, 3.5s;
+  }
+
+  .snowflake-8 {
+    @apply left-9/12;
+    animation-delay: 8s, 4s;
+  }
+
+  .snowflake-9 {
+    @apply left-10/12;
+    animation-delay: 9s, 4.5s;
+  }
+
+  .snowflake-10 {
+    @apply left-11/12;
+    animation-delay: 10s, 5s;
+  }
+
+  .snowflake-11 {
+    @apply left-12/12;
+    animation-delay: 11s, 5.5s;
+  }
+}
+
+/* keyframes for animations */
+@keyframes snowflakes-fall {
+  0% {
+    top: -10%;
+  }
+  100% {
+    top: 110%;
+  }
+}
+
+@keyframes snowflakes-shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(80px);
+  }
+}

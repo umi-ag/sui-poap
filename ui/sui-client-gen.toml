@@ -1,0 +1,9 @@
+[config]
+# will be set to mainnet by default if omitted
+rpc = "https://fullnode.testnet.sui.io:443"
+
+[packages]
+Sui = {git = "https://github.com/MystenLabs/sui.git", subdir = "crates/sui-framework/packages/sui-framework", rev = "mainnet-v1.9.1"}
+coinhouse = {id = "0x2d484eb3ad956818923e850ee7df41dee476cb75d675159dbf9aa725d7b88919"}
+frostend = {id = "0xfb5075d2c8cee0810eab47d90ff41206dcbc1409b6fa404eafacbcd2aea61286"}
+sharbet = {id = "0x883e6ba8d9c14186f703e264455bbeae9cd2d4d56a86fde34386602e00e0df8f"}
