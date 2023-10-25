@@ -1,4 +1,3 @@
-import destr from "destr";
 import { readFileSync } from "fs";
 import path from "path";
 import { Account } from "./type";
@@ -10,9 +9,9 @@ import { Ed25519Keypair } from "@mysten/sui.js/keypairs/ed25519";
 import { genAddressSeed, getZkLoginSignature } from "@mysten/zklogin";
 import { SerializedSignature } from "@mysten/sui.js/cryptography";
 
-const jsonPath = path.resolve(import.meta.dir, "../account.json");
+const jsonPath = path.resolve(__dirname, "../account.json");
 const json = readFileSync(jsonPath, "utf8");
-const account = destr<Account>(json);
+const account = JSON.parse(json) as Account;
 
 const shinamiAccountKey = "sui_mainnet_2d5f260d7d5742c5c4b9e63c9b08af8c";
 const shinamiProviderUrl = `https://api.shinami.com/gas/v1/${shinamiAccountKey}`;
