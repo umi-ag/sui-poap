@@ -1,0 +1,7 @@
+{
+  "URL_ZK_PROVER": "http://prover.umilabs.org/v1",
+  "URL_SALT_SERVICE": "http://localhost:5002/get-salt",
+  "CLIENT_ID_GOOGLE": "25769832374-famecqrhe2gkebt5fvqms2263046lj96.apps.googleusercontent.com",
+  "CLIENT_ID_TWITCH": "rs1bh065i9ya4ydvifixl4kss0uhpt",
+  "CLIENT_ID_FACEBOOK": "233307156352917"
+}
