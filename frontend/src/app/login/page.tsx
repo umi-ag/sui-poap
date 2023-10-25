@@ -3,12 +3,12 @@
 import { ConnectButton, useWallet } from "@suiet/wallet-kit";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
-import { TransactionBlock } from "@mysten/sui.js/transactions";
+import { sponsorTransactionE2E, moveCallMintNft } from "@/libs/movecall";
+import { TransactionBlock } from "@mysten/sui.js";
+import { SENDER_ADDRESS, GAS_BUDGET, sponsor, suiProvider } from "@/config/sui";
+import { PACKAGE_ID } from "@/config/constants";
 // import { ConnectButton, useWalletKit } from "@mysten/wallet-kit";
 import style from "./styles/login.module.css";
-import { moveCallMintNft, sponsorTransactionE2E } from "src/libs/coco";
-import { GAS_BUDGET, sponsor, suiClient } from "src/config/sui";
-import { CoCoNFT } from "src/libs/moveCall/coco/my-nft/structs";
 
 export default function Home() {
   const router = useRouter();
@@ -63,11 +63,10 @@ export default function Home() {
   const executeTx = async () => {
     const sponsoredResponse = await sponsorTransactionE2E();
     const { signature } = await wallet.signTransactionBlock({
-      // @ts-ignore
       transactionBlock: TransactionBlock.from(sponsoredResponse.txBytes),
     });
     console.log({ signature });
-    const executeResponse = await suiClient.executeTransactionBlock({
+    const executeResponse = await suiProvider.executeTransactionBlock({
       transactionBlock: sponsoredResponse.txBytes,
       signature: [signature, sponsoredResponse.signature],
       options: { showEffects: true },
@@ -81,9 +80,8 @@ export default function Home() {
 
   const exctuteMintNFT = async () => {
     setMessage("");
-    const txb = new TransactionBlock();
     try {
-      moveCallMintNft(txb, {
+      const gaslessTxb = await moveCallMintNft({
         origin_name: "wasabi",
         origin_description: "wasabi's icon",
         origin_url:
@@ -94,8 +92,8 @@ export default function Home() {
           "https://toy.bandai.co.jp/assets/tamagotchi/images/chopper/img_chara01.png",
         date: "2023/10/30",
       });
-      const gaslessPayloadBytes = await txb.build({
-        provider: suiClient,
+      const gaslessPayloadBytes = await gaslessTxb.build({
+        provider: suiProvider,
         onlyTransactionKind: true,
       });
       console.log({ gaslessPayloadBytes });
@@ -117,7 +115,7 @@ export default function Home() {
       const sponsoredResponse = await sponsor.gas_sponsorTransactionBlock(
         gaslessPayloadBase64,
         wallet.account.address,
-        GAS_BUDGET,
+        GAS_BUDGET
       );
 
       console.log({ sponsoredResponse });
@@ -128,55 +126,46 @@ export default function Home() {
         );
       console.log("Sponsorship Status:", sponsoredStatus);
       const { signature } = await wallet.signTransactionBlock({
-        // @ts-ignore
         transactionBlock: TransactionBlock.from(sponsoredResponse.txBytes),
       });
       console.log({ signature });
-      const executeResponse = await suiClient.executeTransactionBlock({
+      const targetType = `${PACKAGE_ID}::my_nft::CoCoNFT`;
+      const executeResponse = await suiProvider.executeTransactionBlock({
         transactionBlock: sponsoredResponse.txBytes,
         signature: [signature, sponsoredResponse.signature],
         options: { showEffects: true, showObjectChanges: true },
         requestType: "WaitForLocalExecution",
       });
       console.log({ executeResponse });
-
       if (executeResponse.effects?.status.status === "success") {
         const matchingObject = executeResponse.objectChanges?.find(
-          // @ts-ignore
-          (obj) => obj?.objectType === CoCoNFT.$typeName
+          (obj) => obj?.objectType === targetType
         );
-
-        if (matchingObject) {
-          // @ts-ignore
-          setObjectId(matchingObject.objectId);
-          // @ts-ignore
-          console.log(matchingObject.objectId);
-          // @ts-ignore
-          localStorage.setItem("objectId", matchingObject.objectId);
-          // @ts-ignore
-          const parts = splitObjectId(matchingObject.objectId);
-          console.log({ parts });
-          const result = parseInt("0xcf2ff2a39", 16);
-          console.log(result);
-          setColors({
-            l1: parseInt(parts[0], 16),
-            l2: parseInt(parts[1], 16),
-            l3: parseInt(parts[2], 16),
-            r1: parseInt(parts[3], 16),
-            r2: parseInt(parts[4], 16),
-            r3: parseInt(parts[5], 16),
-          });
-          console.log({ colors });
-          console.log(
-            "Execution Status:",
-            executeResponse.effects?.status.status
-          );
-          const url = `https://suiexplorer.com/txblock/${executeResponse.digest}?network=testnet`;
-          console.log(url);
-          setMessage(`Mint Success! : ${url}`);
-          // localStorage.setItem("colors", JSON.stringify(colors));
-          router.push("/coin");
-        }
+        setObjectId(matchingObject.objectId);
+        console.log(matchingObject.objectId);
+        localStorage.setItem("objectId", matchingObject.objectId);
+        const parts = splitObjectId(matchingObject.objectId);
+        console.log({ parts });
+        const result = parseInt("0xcf2ff2a39", 16);
+        console.log(result);
+        setColors({
+          l1: parseInt(parts[0], 16),
+          l2: parseInt(parts[1], 16),
+          l3: parseInt(parts[2], 16),
+          r1: parseInt(parts[3], 16),
+          r2: parseInt(parts[4], 16),
+          r3: parseInt(parts[5], 16),
+        });
+        console.log({ colors });
+        console.log(
+          "Execution Status:",
+          executeResponse.effects?.status.status
+        );
+        const url = `https://suiexplorer.com/txblock/${executeResponse.digest}?network=testnet`;
+        console.log(url);
+        setMessage(`Mint Success! : ${url}`);
+        // localStorage.setItem("colors", JSON.stringify(colors));
+        router.push("/coin");
       }
     } catch (err) {
       console.log("err:", err);
@@ -199,7 +188,6 @@ export default function Home() {
     // <header className="flex justify-end items-start w-full hidden">
     //   <ConnectButton />
     // </header>
-    // @ts-ignore
     <div style={styles.compose}>
       <div style={styles.contentTop}>
         <p
