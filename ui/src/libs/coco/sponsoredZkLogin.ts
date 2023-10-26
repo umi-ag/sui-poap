@@ -78,9 +78,9 @@ export const moveCallSponsored = async (
   //   account.userAddr,
   // );
 
-  alert("##1");
+  // alert("##1");
   console.log("sponsoredResponse", sponsoredResponse);
-  alert("##2");
+  // alert("##2");
 
 
   // ★ shinamiから受け取ったtxBytesからTransactionBlockを作成
@@ -125,4 +125,6 @@ export const moveCallSponsored = async (
   });
 
   console.log("r", r);
+
+  return r.digest;
 };

@@ -20,6 +20,7 @@ export type Account = {
   ephemeralPublicKey: string;
   ephemeralPrivateKey: string;
   userSalt: string;
+  jwt: string
   sub: string;
   aud: string;
   maxEpoch: number;
