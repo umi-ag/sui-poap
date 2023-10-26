@@ -28,6 +28,7 @@ export const useZkLoginSetup = create<
     getJwt: () => void;
     zkProofs: ZKProof | null;
     account: () => Account;
+    isProofsLoading: boolean;
   }
 >((set, get) => ({
   provider: "Google",
@@ -48,6 +49,7 @@ export const useZkLoginSetup = create<
   aud: "",
   zkProofs: null,
   salt: () => "",
+  isProofsLoading: false,
   beginZkLogin: async (provider: OpenIdProvider) => {
     const { epoch } = await suiClient.getLatestSuiSystemState();
     const maxEpoch = Number(epoch) + MAX_EPOCH; // the ephemeral key will be valid for MAX_EPOCH from now
@@ -82,19 +84,25 @@ export const useZkLoginSetup = create<
       randomness: account.randomeness,
     });
 
-    get().getJwt();
-    const userAddr = jwtToAddress(get().jwt, get().salt());
-    set({ userAddr });
+    if (!get().jwt) {
+      get().getJwt();
+      const userAddr = jwtToAddress(get().jwt, get().salt());
+      set({ userAddr });
+    }
 
-    const zkproofs = await getZkProof({
-      maxEpoch: get().maxEpoch,
-      jwtRandomness: get().randomness,
-      extendedEphemeralPublicKey: get().ephemeralPublicKey,
-      jwt: get().jwt,
-      salt: get().salt(),
-    });
+    if (!account.zkProofs) {
+      set({ isProofsLoading: true });
+      const zkproofs = await getZkProof({
+        maxEpoch: get().maxEpoch,
+        jwtRandomness: get().randomness,
+        extendedEphemeralPublicKey: get().ephemeralPublicKey,
+        jwt: get().jwt,
+        salt: get().salt(),
+      });
 
-    set({ zkProofs: zkproofs });
+      set({ zkProofs: zkproofs });
+      set({ isProofsLoading: false });
+    }
   },
   getJwt: () => {
     const urlFragment = window.location.hash.substring(1);
@@ -127,6 +135,7 @@ export const useZkLoginSetup = create<
     ephemeralPublicKey: get().ephemeralPublicKey,
     ephemeralPrivateKey: get().ephemeralPrivateKey,
     userSalt: get().salt(),
+    jwt: get().jwt,
     sub: get().sub,
     aud: get().aud,
     maxEpoch: get().maxEpoch,
@@ -203,6 +212,11 @@ const getZkProof = async (props: {
       keyClaimName: "sub",
     }),
   });
+
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`);
+  }
+
   const zkProofs = await response.json();
   return zkProofs;
 };
