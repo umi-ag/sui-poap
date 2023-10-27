@@ -1,11 +1,7 @@
 {
   "compilerOptions": {
     "target": "ESNext",
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "esnext"
-    ],
+    "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
@@ -24,12 +20,8 @@
       }
     ],
     "paths": {
-      "src/*": [
-        "./src/*"
-      ],
-      "public/*": [
-        "./public/*"
-      ]
+      "src/*": ["./src/*"],
+      "public/*": ["./public/*"]
     }
   },
   "include": [
@@ -37,9 +29,7 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    "src/components/ThreeScene.js"
+    "src/app/nft/components/ThreeScene.js"
   ],
-  "exclude": [
-    "node_modules"
-  ]
+  "exclude": ["node_modules"]
 }

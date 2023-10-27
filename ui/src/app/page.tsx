@@ -14,6 +14,8 @@ import { CoCoNFT } from "src/libs/moveCall/coco/my-nft/structs";
 import { useZkLoginSetup } from "src/store/zklogin";
 import { moveCallSponsored } from "src/libs/coco/sponsoredZkLogin";
 import { NETWORK } from "src/config/sui";
+import { PACKAGE_ID, cocoObjectType } from "src/config";
+import { CoCoNFTView, CoCoNFTProps } from "src/app/nft/components/CoCoNFTView";
 
 const ZKLOGIN_ACCONTS = "zklogin-demo.accounts";
 
@@ -46,7 +48,7 @@ export default function Home() {
     null
   );
   const zkLoginSetup = useZkLoginSetup();
-  const [colors, setColors] = useLocalStorage("colors", {
+  const [colors, setColors] = useState<CoCoNFTProps>({
     l1: 0xffd1dc,
     l2: 0xaec6cf,
     l3: 0xb39eb5,
@@ -61,9 +63,13 @@ export default function Home() {
     }
   }, []);
 
+  useEffect(() => {
+    localStorage.setItem("colors", JSON.stringify(colors));
+  }, [colors]);
+
   const styles = {
     compose: {
-      background: "url('/login/background.png') center / cover no-repeat",
+      // background: "url('/login/background.png') center / cover no-repeat",
       width: "100vw",
       height: "100vh",
       boxSizing: "border-box",
@@ -252,6 +258,24 @@ export default function Home() {
     }
   };
 
+  const updateColors = (result: any) => {
+    const matchingObject = result.objectChanges?.find(
+      // @ts-ignore
+      (obj) => obj?.objectType === CoCoNFT.$typeName
+    );
+    // @ts-ignore
+    const parts = splitObjectId(matchingObject.objectId);
+    console.log({ parts });
+    setColors({
+      l1: parseInt(parts[0], 16),
+      l2: parseInt(parts[1], 16),
+      l3: parseInt(parts[2], 16),
+      r1: parseInt(parts[3], 16),
+      r2: parseInt(parts[4], 16),
+      r3: parseInt(parts[5], 16),
+    });
+  };
+
   const handleButtonClick = async () => {
     setLoading(true);
     try {
@@ -337,8 +361,10 @@ export default function Home() {
             const account = zkLoginSetup.account();
             console.log("account", account);
             const txb = new TransactionBlock();
-            const digest = await moveCallSponsored(txb, account);
-            setDigest(digest);
+            const result = await moveCallSponsored(txb, account);
+            setDigest(result.digest);
+            updateColors(result);
+            router.push("/nft");
           }}
           className={`bg-slate-600 hover:bg-slate-700 text-white w-32 py-3 px-5 rounded-xl text-xl ${style.myRobotoFont}`}
           // disabled={loading}
