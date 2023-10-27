@@ -1,21 +1,52 @@
 "use client";
 
 import { useWallet } from "@suiet/wallet-kit";
-import { useLocalStorage } from 'usehooks-ts'
+import { useLocalStorage } from "usehooks-ts";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { MouseEventHandler, ReactNode, useEffect, useState } from "react";
 import { TransactionBlock } from "@mysten/sui.js/transactions";
 // import { ConnectButton, useWalletKit } from "@mysten/wallet-kit";
 import style from "./styles/login.module.css";
 import { moveCallMintNft, sponsorTransactionE2E } from "src/libs/coco";
 import { GAS_BUDGET, sponsor, suiClient } from "src/config/sui";
+import { Account, OpenIdProvider } from "src/types";
 import { CoCoNFT } from "src/libs/moveCall/coco/my-nft/structs";
+import { useZkLoginSetup } from "src/store/zklogin";
+import { moveCallSponsored } from "src/libs/coco/sponsoredZkLogin";
+import { NETWORK } from "src/config/sui";
+
+const ZKLOGIN_ACCONTS = "zklogin-demo.accounts";
+
+const Button = ({
+  children,
+  onClick,
+  disabled,
+}: {
+  children: ReactNode;
+  onClick: MouseEventHandler;
+  disabled?: boolean;
+}) => (
+  <button
+    className="btn-login text-black font-bold py-2 px-4 rounded border border-gray-300 disabled:bg-gray-300 disabled:cursor-not-allowed"
+    onClick={onClick}
+    disabled={disabled}
+  >
+    {children}
+  </button>
+);
 
 export default function Home() {
   const router = useRouter();
   const wallet = useWallet();
+  const [modalContent, setModalContent] = useState<string>("");
   const [loading, setLoading] = useState(false);
-  const [colors, setColors] = useLocalStorage('colors', {
+  const [digest, setDigest] = useState<string>("");
+  const [account, setAccount] = useLocalStorage<Account | null>(
+    ZKLOGIN_ACCONTS,
+    null
+  );
+  const zkLoginSetup = useZkLoginSetup();
+  const [colors, setColors] = useLocalStorage("colors", {
     l1: 0xffd1dc,
     l2: 0xaec6cf,
     l3: 0xb39eb5,
@@ -23,6 +54,12 @@ export default function Home() {
     r2: 0xfff5b2,
     r3: 0xffb347,
   });
+
+  useEffect(() => {
+    if (account) {
+      zkLoginSetup.completeZkLogin(account);
+    }
+  }, []);
 
   const styles = {
     compose: {
@@ -42,6 +79,37 @@ export default function Home() {
     },
   };
 
+  // https://docs.sui.io/build/zk_login#set-up-oauth-flow
+  const beginZkLogin = async (provider: OpenIdProvider) => {
+    setModalContent(`🔑 Logging in with ${provider}...`);
+
+    await zkLoginSetup.beginZkLogin(provider);
+    setAccount(zkLoginSetup.account());
+    const loginUrl = zkLoginSetup.loginUrl();
+    window.location.replace(loginUrl);
+  };
+
+  const openIdProviders: OpenIdProvider[] = [
+    "Google",
+    // "Twitch",
+    // "Facebook",
+  ];
+
+  const status = () => {
+    if (!zkLoginSetup.jwt) {
+      return "Not signed in";
+    }
+
+    if (!zkLoginSetup.zkProofs && zkLoginSetup.isProofsLoading) {
+      return "Loading zk proofs...";
+    }
+
+    return "Ready!";
+  };
+
+  const shortenAddress = (addr: string) => {
+    return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
+  };
 
   const splitObjectId = (objectId: string) => {
     const str = objectId.slice(2);
@@ -102,22 +170,22 @@ export default function Home() {
         )
       );
 
-      console.log('#34', { gaslessPayloadBase64 });
+      console.log("#34", { gaslessPayloadBase64 });
 
       if (!wallet.account || !wallet.account.address) {
         console.error("Wallet address is undefined");
         return;
       }
 
-      console.log('#35', wallet.account.address)
+      console.log("#35", wallet.account.address);
 
       const sponsoredResponse = await sponsor.gas_sponsorTransactionBlock(
         gaslessPayloadBase64,
         wallet.account.address,
-        GAS_BUDGET,
+        GAS_BUDGET
       );
 
-      console.log('#36', { sponsoredResponse });
+      console.log("#36", { sponsoredResponse });
 
       const sponsoredStatus =
         await sponsor.gas_getSponsoredTransactionBlockStatus(
@@ -125,14 +193,14 @@ export default function Home() {
         );
 
       console.log("Sponsorship Status:", sponsoredStatus);
-      alert('#38')
+      alert("#38");
       const { signature } = await wallet.signTransactionBlock({
         // @ts-ignore
         transactionBlock: TransactionBlock.from(sponsoredResponse.txBytes),
       });
 
       console.log({ signature });
-      alert('#41')
+      alert("#41");
       const executeResponse = await suiClient.executeTransactionBlock({
         transactionBlock: sponsoredResponse.txBytes,
         signature: [signature, sponsoredResponse.signature],
@@ -140,7 +208,7 @@ export default function Home() {
         requestType: "WaitForLocalExecution",
       });
       console.log({ executeResponse });
-      alert('#42')
+      alert("#42");
 
       if (executeResponse.effects?.status.status === "success") {
         const matchingObject = executeResponse.objectChanges?.find(
@@ -149,7 +217,7 @@ export default function Home() {
         );
 
         if (matchingObject) {
-          alert('#43')
+          alert("#43");
           // @ts-ignore
           setObjectId(matchingObject.objectId);
           // @ts-ignore
@@ -221,17 +289,60 @@ export default function Home() {
           <span className="text-2xl">presented by</span> Umi Labs
         </p>
       </div>
+      <div id="network-indicator" className="mb-4">
+        <label className="text-lg font-bold">{NETWORK}</label>
+      </div>
+      <div id="login-buttons" className="section mb-8">
+        {/* <h2 className="text-xl font-bold mb-2">Log in:</h2> */}
+        {openIdProviders.map((provider) => (
+          <button
+            className={`btn-login text-black font-bold py-2 px-4 rounded border border-gray-300 ${provider}`}
+            onClick={() => beginZkLogin(provider)}
+            key={provider}
+          >
+            Log in with {provider}
+          </button>
+        ))}
+      </div>
+      <p className="mb-2">
+        zkLogin Address:{" "}
+        {zkLoginSetup.userAddr && (
+          <b>
+            <a
+              className="text-blue-400 underline"
+              href={`https://suiscan.xyz/mainnet/account/${zkLoginSetup.userAddr}/tx-blocks`}
+            >
+              {shortenAddress(zkLoginSetup.userAddr)}
+            </a>
+          </b>
+        )}
+      </p>
+      <p className="mb-4">
+        Current Status: <b>{status()}</b>
+      </p>
+      <p className="mt-2">
+        <a
+          className="text-blue-400 underline"
+          href={`https://suiscan.xyz/mainnet/tx/${digest}`}
+        >
+          {digest}
+        </a>
+      </p>
       <div
         className="flex flex-col justify-center items-center"
         style={styles.contentBottom}
       >
         <button
-          onClick={async (event: any) => {
-            event.preventDefault();
-            await handleButtonClick();
+          onClick={async () => {
+            const account = zkLoginSetup.account();
+            console.log("account", account);
+            const txb = new TransactionBlock();
+            const digest = await moveCallSponsored(txb, account);
+            setDigest(digest);
           }}
           className={`bg-slate-600 hover:bg-slate-700 text-white w-32 py-3 px-5 rounded-xl text-xl ${style.myRobotoFont}`}
-          disabled={loading}
+          // disabled={loading}
+          disabled={!zkLoginSetup.zkProofs}
         >
           {loading ? "Loading..." : "Mint"}
         </button>
