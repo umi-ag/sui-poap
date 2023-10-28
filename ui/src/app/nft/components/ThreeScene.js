@@ -128,12 +128,12 @@ const ThreeScene = ({ props }) => {
     numLoader.load(fontjson, function (font) {
       const numGeometry = new TextGeometry(props.num, {
         font: font,
-        size: 0.07,
+        size: 0.04,
         height: 0.001,
       });
       const numMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
       const numMesh = new THREE.Mesh(numGeometry, numMaterial);
-      numMesh.position.set(0.1, 0.2, -0.012);
+      numMesh.position.set(0.25, 0.22, -0.012);
       numMesh.rotation.y = Math.PI;
       coinGroup.add(numMesh);
     });

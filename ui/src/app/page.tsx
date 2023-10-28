@@ -14,6 +14,7 @@ import { Account, OpenIdProvider } from "src/types";
 import { CoCoNFT } from "src/libs/moveCall/coco/my-nft/structs";
 import { useZkLoginSetup } from "src/store/zklogin";
 import { moveCallSponsored } from "src/libs/coco/sponsoredZkLogin";
+import { shortenAddress } from "src/utils";
 import { NETWORK } from "src/config/sui";
 import { PACKAGE_ID, cocoObjectType } from "src/config";
 import loginAnimationData from "src/components/interface/animations/login.json";
@@ -103,23 +104,6 @@ export default function Home() {
     return "Ready!";
   };
 
-  const shortenAddress = (addr: string) => {
-    return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
-  };
-
-  const splitObjectId = (objectId: string) => {
-    const str = objectId.slice(2);
-    const length = str.length;
-    const partLength = Math.ceil(length / 6);
-    const parts = [];
-
-    for (let i = 0; i < 6; i++) {
-      parts.push(str.slice(i * partLength, (i + 1) * partLength));
-    }
-
-    return parts;
-  };
-
   const updateColors = (result: any) => {
     const matchingObject = result.objectChanges?.find(
       // @ts-ignore
@@ -136,6 +120,19 @@ export default function Home() {
       r2: parseInt(parts[4], 16),
       r3: parseInt(parts[5], 16),
     });
+  };
+
+  const splitObjectId = (objectId: string) => {
+    const str = objectId.slice(2);
+    const length = str.length;
+    const partLength = Math.ceil(length / 6);
+    const parts = [];
+
+    for (let i = 0; i < 6; i++) {
+      parts.push(str.slice(i * partLength, (i + 1) * partLength));
+    }
+
+    return parts;
   };
 
   return (

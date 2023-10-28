@@ -4,6 +4,8 @@
 import ThreeScene from "./components/ThreeScene";
 import React, { useEffect, useState } from "react";
 import { useZkLoginSetup } from "src/store/zklogin";
+import style from "../styles/login.module.css";
+import { shortenAddress } from "src/utils";
 
 export default function Coin() {
   const zkLoginSetup = useZkLoginSetup();
@@ -43,10 +45,41 @@ export default function Coin() {
     r2: parseInt(hexColors.r2, 16),
     r3: parseInt(hexColors.r3, 16),
     date: "2023/10/30",
-    num: "#000",
+    num: "Suiブロックチェーンの\n     ここがすごい",
   };
   return (
-    <div>
+    <div className="">
+      <div style={{ position: "absolute", color: "white", width: "100vw" }}>
+        <div>
+          <p
+            className={`${style.mySpecialFont} mt-10 text-center text-white text-3xl font-bold leading-9`}
+          >
+            Thank you for coming!
+          </p>
+        </div>
+        <div className="flex flex-col">
+          <div className="flex justify-center mt-2 mb-2">
+            <p
+              className={`${style.mySpecialFont} mt-10 text-center text-white text-2xl font-bold leading-9`}
+            >
+              Your Address:
+            </p>
+            {zkLoginSetup.userAddr && (
+              <b
+                className={`${style.mySpecialFont} mt-10 text-center text-white text-2xl font-bold leading-9 ml-2`}
+              >
+                {" "}
+                <a
+                  className="text-blue-400 underline"
+                  href={`https://suiscan.xyz/mainnet/account/${zkLoginSetup.userAddr}/tx-blocks`}
+                >
+                  {shortenAddress(zkLoginSetup.userAddr)}
+                </a>
+              </b>
+            )}
+          </div>
+        </div>
+      </div>
       <ThreeScene props={props} />
     </div>
   );
