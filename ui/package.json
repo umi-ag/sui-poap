@@ -21,6 +21,7 @@
     "@umi-ag/sui-sdk": "^0.202308.3",
     "autoprefixer": "10.4.15",
     "bigint-buffer": "^1.1.5",
+    "bufferutil": "^4.0.8",
     "crypto-js": "^4.1.1",
     "dayjs": "^1.11.9",
     "decimal.js": "^10.4.3",

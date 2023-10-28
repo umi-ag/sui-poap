@@ -2,20 +2,36 @@
 "use client";
 
 import ThreeScene from "./components/ThreeScene";
+import React, { useEffect, useState } from "react";
 import { useZkLoginSetup } from "src/store/zklogin";
 
 export default function Coin() {
   const zkLoginSetup = useZkLoginSetup();
+  const [colors, setColors] = useState(null);
+
+  useEffect(() => {
+    // @ts-ignore
+    const localColors = JSON.parse(localStorage.getItem("colors"));
+    setColors(localColors);
+  }, []);
+
+  if (!colors) return null;
   // @ts-ignore
-  const colors = JSON.parse(localStorage.getItem("colors"));
-  console.log({ colors });
-  console.log(colors.l1);
+  // const colors = JSON.parse(localStorage.getItem("colors"));
+  // console.log({ colors });
+  // console.log(colors.l1);
   const hexColors = {
+    // @ts-ignore
     l1: "0x" + colors.l1.toString(16).padStart(6, "0"),
+    // @ts-ignore
     l2: "0x" + colors.l2.toString(16).padStart(6, "0"),
+    // @ts-ignore
     l3: "0x" + colors.l3.toString(16).padStart(6, "0"),
+    // @ts-ignore
     r1: "0x" + colors.r1.toString(16).padStart(6, "0"),
+    // @ts-ignore
     r2: "0x" + colors.r2.toString(16).padStart(6, "0"),
+    // @ts-ignore
     r3: "0x" + colors.r3.toString(16),
   };
 
