@@ -1,3 +1,4 @@
+// ui/src/app/page.tsx
 "use client";
 
 import { useWallet } from "@suiet/wallet-kit";
@@ -19,8 +20,7 @@ import { NETWORK } from "src/config/sui";
 import { PACKAGE_ID, cocoObjectType } from "src/config";
 import loginAnimationData from "src/components/interface/animations/login.json";
 import googleAnimationData from "src/components/interface/animations/google.json";
-
-const ZKLOGIN_ACCONTS = "zklogin-demo.accounts";
+import { ZKLOGIN_ACCONTS, OBJECT_ID, ZKLOGIN_ADDRESS } from "src/config";
 
 export default function Home() {
   const router = useRouter();
@@ -31,6 +31,14 @@ export default function Home() {
   const [err, setErr] = useState<string>("");
   const [account, setAccount] = useLocalStorage<Account | null>(
     ZKLOGIN_ACCONTS,
+    null
+  );
+  const [objectid, setObjectid] = useLocalStorage<string | null>(
+    OBJECT_ID,
+    null
+  );
+  const [zkAddress, setZkAddress] = useLocalStorage<string | null>(
+    ZKLOGIN_ADDRESS,
     null
   );
   const [generated, setGenerated] = useState(false);
@@ -51,8 +59,13 @@ export default function Home() {
 
   useEffect(() => {
     if (account) {
+      console.log({ account });
       zkLoginSetup.completeZkLogin(account);
     }
+    // localStorage.removeItem("objectId");
+    // if (objectid) {
+    //   router.push("/nft");
+    // }
   }, []);
 
   useEffect(() => {
@@ -82,7 +95,10 @@ export default function Home() {
     setModalContent(`🔑 Logging in with ${provider}...`);
 
     await zkLoginSetup.beginZkLogin(provider);
+    console.log(zkLoginSetup.account());
     setAccount(zkLoginSetup.account());
+    console.log(zkLoginSetup.userAddr);
+    // setZkAddress(zkLoginSetup.userAddr);
     const loginUrl = zkLoginSetup.loginUrl();
     window.location.replace(loginUrl);
   };
@@ -115,6 +131,7 @@ export default function Home() {
       setErr("Double Mint rejected...");
       throw new Error("objectType not found");
     }
+    setObjectid(matchingObject.objectId);
     // @ts-ignore
     const parts = splitObjectId(matchingObject.objectId);
     console.log({ parts });
@@ -233,6 +250,8 @@ export default function Home() {
             setLoading(true);
             const account = zkLoginSetup.account();
             console.log("account", account);
+            console.log(zkLoginSetup.userAddr);
+            setZkAddress(zkLoginSetup.userAddr);
             const txb = new TransactionBlock();
             const result = await moveCallSponsored(txb, account);
             if (result.effects?.status.status === "success") {

@@ -6,15 +6,27 @@ import React, { useEffect, useState } from "react";
 import { useZkLoginSetup } from "src/store/zklogin";
 import style from "../styles/login.module.css";
 import { shortenAddress } from "src/utils";
+import { ZKLOGIN_ACCONTS, OBJECT_ID, ZKLOGIN_ADDRESS } from "src/config";
 
 export default function Coin() {
   const zkLoginSetup = useZkLoginSetup();
   const [colors, setColors] = useState(null);
+  const [objectId, setObjectId] = useState(null);
+  const [address, setAddress] = useState(null);
 
   useEffect(() => {
     // @ts-ignore
     const localColors = JSON.parse(localStorage.getItem("colors"));
     setColors(localColors);
+    // @ts-ignore
+    const obj_id = JSON.parse(localStorage.getItem(OBJECT_ID));
+    console.log({ obj_id });
+    setObjectId(obj_id);
+
+    // @ts-ignore
+    const addr = JSON.parse(localStorage.getItem(ZKLOGIN_ADDRESS));
+    console.log({ addr });
+    setAddress(addr);
   }, []);
 
   if (!colors) return null;
@@ -58,29 +70,59 @@ export default function Coin() {
           </p>
         </div>
         <div className="flex flex-col">
-          <div className="flex justify-center mt-2 mb-2">
+          <div className="flex justify-center">
             <p
-              className={`${style.mySpecialFont} mt-10 text-center text-white text-2xl font-bold leading-9`}
+              className={`${style.mySpecialFont} mt-5 text-center text-white text-2xl font-bold leading-9`}
             >
               Your Address:
             </p>
-            {zkLoginSetup.userAddr && (
+            {address && (
               <b
-                className={`${style.mySpecialFont} mt-10 text-center text-white text-2xl font-bold leading-9 ml-2`}
+                className={`${style.mySpecialFont} mt-5 text-center text-white text-2xl font-bold leading-9 ml-2`}
               >
                 {" "}
                 <a
                   className="text-blue-400 underline"
-                  href={`https://suiscan.xyz/mainnet/account/${zkLoginSetup.userAddr}/tx-blocks`}
+                  href={`https://suiscan.xyz/mainnet/account/${address}/tx-blocks`}
+                  target="_blank"
+                  rel="noopener noreferrer"
                 >
-                  {shortenAddress(zkLoginSetup.userAddr)}
+                  {/* @ts-ignore */}
+                  {shortenAddress(address)}
+                </a>
+              </b>
+            )}
+          </div>
+        </div>
+        <div className="flex flex-col">
+          <div className="flex justify-center">
+            <p
+              className={`${style.mySpecialFont} mt-5 text-center text-white text-2xl font-bold leading-9`}
+            >
+              ObjectId:
+            </p>
+            {objectId && (
+              <b
+                className={`${style.mySpecialFont} mt-5 text-center text-white text-2xl font-bold leading-9 ml-2`}
+              >
+                {" "}
+                <a
+                  className="text-blue-400 underline"
+                  href={`https://suiscan.xyz/mainnet/object/${objectId}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {/* @ts-ignore */}
+                  {shortenAddress(objectId)}
                 </a>
               </b>
             )}
           </div>
         </div>
       </div>
-      <ThreeScene props={props} />
+      <div className="mt-30">
+        <ThreeScene props={props} />
+      </div>
     </div>
   );
 }
