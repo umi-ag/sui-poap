@@ -3,6 +3,9 @@ export const isProduction = () => {
 };
 
 export const PACKAGE_ID =
-  "0x8a6dc43e0b98279f47f4f4187a981846059d9e9b981001916ecdc082e124e7e5";
+  "0xe41269e692f2fd6928863efd718854b7ce1b3437179b260cafa65005761648e0";
 
-export const cocoObjectType = `${PACKAGE_ID}::my_nft::CoCoNFT`;
+export const VISITOR_LIST_ID =
+  "0x82266c7b36fd0b520175c1ccfd2ed32544453d183592cb7cdb35e429783f6b2a";
+
+export const cocoObjectType = `${PACKAGE_ID}::nft::CoCoNFT`;

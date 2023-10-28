@@ -43,14 +43,9 @@ export const moveCallSponsored = async (
 ) => {
   txb.setSender(account.userAddr);
   moveCallMintNft(txb, {
-    origin_name: "takaya",
-    origin_description: "takaya's icon",
-    origin_url:
-      "https://pbs.twimg.com/profile_images/1538981748478214144/EUjTgb0v_400x400.jpg",
-    item_name: "imataka",
-    item_description: "hey",
-    item_url:
-      "https://toy.bandai.co.jp/assets/tamagotchi/images/chopper/img_chara01.png",
+    name: "Sui Meetup POAP",
+    description: "Sui Japan コミュニティイベント来場証明NFT",
+    url: "https://pbs.twimg.com/profile_images/1538981748478214144/EUjTgb0v_400x400.jpg",
     date: "2023/10/30",
   });
   const payloadBytes = await txb.build({

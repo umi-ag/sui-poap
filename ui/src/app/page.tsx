@@ -28,6 +28,7 @@ export default function Home() {
   const [modalContent, setModalContent] = useState<string>("");
   const [loading, setLoading] = useState(false);
   const [digest, setDigest] = useState<string>("");
+  const [err, setErr] = useState<string>("");
   const [account, setAccount] = useLocalStorage<Account | null>(
     ZKLOGIN_ACCONTS,
     null
@@ -105,10 +106,15 @@ export default function Home() {
   };
 
   const updateColors = (result: any) => {
+    const targetObjectType = `${PACKAGE_ID}::nft::CoCoNFT`;
     const matchingObject = result.objectChanges?.find(
       // @ts-ignore
-      (obj) => obj?.objectType === CoCoNFT.$typeName
+      (obj) => obj?.objectType === targetObjectType
     );
+    if (!matchingObject || !matchingObject.objectType) {
+      setErr("Double Mint rejected...");
+      throw new Error("objectType not found");
+    }
     // @ts-ignore
     const parts = splitObjectId(matchingObject.objectId);
     console.log({ parts });
@@ -215,6 +221,11 @@ export default function Home() {
           </a>
         </p>
       </div>
+      <div>
+        <div className="text-red-700 text-lg flex-shrink-0">
+          <b>{err}</b>
+        </div>
+      </div>
       <div
         className="flex flex-col justify-center items-center"
         style={styles.contentBottom}
@@ -226,10 +237,15 @@ export default function Home() {
             console.log("account", account);
             const txb = new TransactionBlock();
             const result = await moveCallSponsored(txb, account);
-            setDigest(result.digest);
-            updateColors(result);
+            if (result.effects?.status.status === "success") {
+              setDigest(result.digest);
+              updateColors(result);
+              router.push("/nft");
+            } else {
+              // setErr(`Transaction Failed: ${result.effects?.status.error}`);
+              setErr("Transaction Failed...");
+            }
             setLoading(false);
-            router.push("/nft");
           }}
           className={`text-white w-32 py-3 px-5 rounded-xl text-xl ${
             style.myRobotoFont
