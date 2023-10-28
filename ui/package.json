@@ -27,6 +27,7 @@
     "destr": "^2.0.2",
     "hono": "^3.8.3",
     "jose": "^5.0.1",
+    "lottie-web": "^5.12.2",
     "microcms-js-sdk": "^2.5.0",
     "next": "13.4.18",
     "numeral": "^2.0.6",

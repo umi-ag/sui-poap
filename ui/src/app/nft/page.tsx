@@ -2,8 +2,10 @@
 "use client";
 
 import ThreeScene from "./components/ThreeScene";
+import { useZkLoginSetup } from "src/store/zklogin";
 
 export default function Coin() {
+  const zkLoginSetup = useZkLoginSetup();
   const colors = JSON.parse(localStorage.getItem("colors"));
   console.log({ colors });
   console.log(colors.l1);
