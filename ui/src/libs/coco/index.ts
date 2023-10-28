@@ -1,7 +1,11 @@
 // import { SENDER_ADDRESS, GAS_BUDGET, sponsor, suiProvider } from "@/config/sui";
-import { TransactionBlock } from "@mysten/sui.js/transactions";
+import {
+  TransactionBlock,
+  TransactionArgument,
+} from "@mysten/sui.js/transactions";
 import { GAS_BUDGET, SENDER_ADDRESS, sponsor, suiClient } from "src/config/sui";
-import { firstMint } from "../moveCall/coco/my-nft/functions";
+// import { firstMint } from "../moveCall/coco/my-nft/functions";
+import { PACKAGE_ID, VISITOR_LIST_ID } from "src/config";
 // import { SENDER_ADDRESS, GAS_BUDGET } from "@/config/sui";
 
 // Create a programmable transaction block to send an object from the sender to the recipient
@@ -18,28 +22,49 @@ export const progTxnTransfer = () => {
 
   txb.transferObjects(
     [txb.object(OBJECT_TO_SEND)],
-    txb.pure(RECIPIENT_ADDRESS),
+    txb.pure(RECIPIENT_ADDRESS)
   );
   return txb;
 };
 
-export const moveCallMintNft = (txb: TransactionBlock, props: {
-  origin_name: string;
-  origin_description: string;
-  origin_url: string;
-  item_name: string;
-  item_description: string;
-  item_url: string;
-  date: string;
-}) => {
+export interface FirstMintArgs {
+  // list: string | TransactionArgument;
+  name: string | TransactionArgument;
+  description: string | TransactionArgument;
+  url: string | TransactionArgument;
+  date: string | TransactionArgument;
+}
+
+export function firstMint(txb: TransactionBlock, args: FirstMintArgs) {
+  return txb.moveCall({
+    target: `${PACKAGE_ID}::nft::first_mint`,
+    arguments: [
+      txb.pure(VISITOR_LIST_ID),
+      // txb.pure(args.name, `0x1::string::String`),
+      txb.pure(args.name),
+      txb.pure(args.description),
+      txb.pure(args.url),
+      txb.pure(args.date),
+    ],
+  });
+}
+
+export const moveCallMintNft = (
+  txb: TransactionBlock,
+  props: {
+    // list: string;
+    name: string;
+    description: string;
+    url: string;
+    date: string;
+  }
+) => {
   firstMint(txb, {
-    string1: props.origin_name,
-    string2: props.origin_description,
-    string3: props.origin_url,
-    string4: props.item_name,
-    string5: props.item_description,
-    string6: props.item_url,
-    string7: props.date,
+    // list: props.list,
+    name: props.name,
+    description: props.description,
+    url: props.url,
+    date: props.date,
   });
 };
 
@@ -66,8 +91,8 @@ export const sponsorTransactionE2E = async () => {
   const gaslessPayloadBase64 = btoa(
     gaslessPayloadBytes.reduce(
       (data, byte) => data + String.fromCharCode(byte),
-      "",
-    ),
+      ""
+    )
   );
 
   console.log({ gaslessPayloadBase64 });
@@ -75,13 +100,13 @@ export const sponsorTransactionE2E = async () => {
   const sponsoredResponse = await sponsor.gas_sponsorTransactionBlock(
     gaslessPayloadBase64,
     SENDER_ADDRESS,
-    GAS_BUDGET,
+    GAS_BUDGET
   );
 
   console.log({ sponsoredResponse });
 
   const sponsoredStatus = await sponsor.gas_getSponsoredTransactionBlockStatus(
-    sponsoredResponse.txDigest,
+    sponsoredResponse.txDigest
   );
   console.log("Sponsorship Status:", sponsoredStatus);
 
