@@ -1,7 +1,6 @@
 // ui/src/app/page.tsx
 "use client";
 
-import { useWallet } from "@suiet/wallet-kit";
 import { useLocalStorage } from "usehooks-ts";
 import { useRouter } from "next/navigation";
 import { useLottie } from "src/utils/useLottie";
@@ -29,7 +28,6 @@ import {
 
 export default function Home() {
   const router = useRouter();
-  const wallet = useWallet();
   const [modalContent, setModalContent] = useState<string>("");
   const [loading, setLoading] = useState(false);
   const [digest, setDigest] = useState<string>("");
@@ -163,9 +161,6 @@ export default function Home() {
   };
 
   return (
-    // <header className="flex justify-end items-start w-full hidden">
-    //   <ConnectButton />
-    // </header>
     // @ts-ignore
     <div
       className="flex flex-col items-center justify-center w-full"
