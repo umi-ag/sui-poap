@@ -162,8 +162,6 @@ export default function Home() {
         >
           <span className="text-2xl">by</span> zkLogin & Sponsored Transaction,
           <br />
-          {/* Dynamic / Composable NFT */}
-          {/* <br /> */}
         </p>
         <p
           className={`${style.mySpecialFont} mt-3 text-center text-white text-3xl font-bold leading-9`}
