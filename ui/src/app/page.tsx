@@ -20,7 +20,12 @@ import { NETWORK } from "src/config/sui";
 import { PACKAGE_ID, cocoObjectType } from "src/config";
 import loginAnimationData from "src/components/interface/animations/login.json";
 import googleAnimationData from "src/components/interface/animations/google.json";
-import { ZKLOGIN_ACCONTS, OBJECT_ID, ZKLOGIN_ADDRESS } from "src/config";
+import {
+  ZKLOGIN_ACCONTS,
+  OBJECT_ID,
+  ZKLOGIN_ADDRESS,
+  ZKLOGIN_COLOR,
+} from "src/config";
 
 export default function Home() {
   const router = useRouter();
@@ -41,14 +46,7 @@ export default function Home() {
     ZKLOGIN_ADDRESS,
     null
   );
-  const [generated, setGenerated] = useState(false);
-  const { container } = useLottie(loginAnimationData, true);
-  const { container: googleAnimationContainer } = useLottie(
-    googleAnimationData,
-    true
-  );
-  const zkLoginSetup = useZkLoginSetup();
-  const [colors, setColors] = useState({
+  const [colors, setColors] = useLocalStorage(ZKLOGIN_COLOR, {
     l1: 0xffd1dc,
     l2: 0xaec6cf,
     l3: 0xb39eb5,
@@ -56,16 +54,22 @@ export default function Home() {
     r2: 0xfff5b2,
     r3: 0xffb347,
   });
+  const [generated, setGenerated] = useState(false);
+  const { container } = useLottie(loginAnimationData, true);
+  const { container: googleAnimationContainer } = useLottie(
+    googleAnimationData,
+    true
+  );
+  const zkLoginSetup = useZkLoginSetup();
 
   useEffect(() => {
     if (account) {
       console.log({ account });
       zkLoginSetup.completeZkLogin(account);
     }
-    // localStorage.removeItem("objectId");
-    // if (objectid) {
-    //   router.push("/nft");
-    // }
+    if (objectid) {
+      router.push("/nft");
+    }
   }, []);
 
   useEffect(() => {

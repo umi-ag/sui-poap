@@ -6,7 +6,12 @@ import React, { useEffect, useState } from "react";
 import { useZkLoginSetup } from "src/store/zklogin";
 import style from "../styles/login.module.css";
 import { shortenAddress } from "src/utils";
-import { ZKLOGIN_ACCONTS, OBJECT_ID, ZKLOGIN_ADDRESS } from "src/config";
+import {
+  ZKLOGIN_ACCONTS,
+  OBJECT_ID,
+  ZKLOGIN_ADDRESS,
+  ZKLOGIN_COLOR,
+} from "src/config";
 
 export default function Coin() {
   const zkLoginSetup = useZkLoginSetup();
@@ -16,7 +21,7 @@ export default function Coin() {
 
   useEffect(() => {
     // @ts-ignore
-    const localColors = JSON.parse(localStorage.getItem("colors"));
+    const localColors = JSON.parse(localStorage.getItem(ZKLOGIN_COLOR));
     setColors(localColors);
     // @ts-ignore
     const obj_id = JSON.parse(localStorage.getItem(OBJECT_ID));
