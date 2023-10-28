@@ -183,6 +183,7 @@ const ThreeScene = ({ props }) => {
     coinGroup.add(designmesh);
     coinGroup.add(backmesh);
     coinGroup.add(colorsGroup);
+    coinGroup.position.y = -0.2;
     scene.add(coinGroup);
 
     const ambientLight = new THREE.AmbientLight(0xffffff, 2);

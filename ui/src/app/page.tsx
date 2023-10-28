@@ -1,6 +1,6 @@
+// ui/src/app/page.tsx
 "use client";
 
-import { useWallet } from "@suiet/wallet-kit";
 import { useLocalStorage } from "usehooks-ts";
 import { useRouter } from "next/navigation";
 import { useLottie } from "src/utils/useLottie";
@@ -19,12 +19,15 @@ import { NETWORK } from "src/config/sui";
 import { PACKAGE_ID, cocoObjectType } from "src/config";
 import loginAnimationData from "src/components/interface/animations/login.json";
 import googleAnimationData from "src/components/interface/animations/google.json";
-
-const ZKLOGIN_ACCONTS = "zklogin-demo.accounts";
+import {
+  ZKLOGIN_ACCONTS,
+  OBJECT_ID,
+  ZKLOGIN_ADDRESS,
+  ZKLOGIN_COLOR,
+} from "src/config";
 
 export default function Home() {
   const router = useRouter();
-  const wallet = useWallet();
   const [modalContent, setModalContent] = useState<string>("");
   const [loading, setLoading] = useState(false);
   const [digest, setDigest] = useState<string>("");
@@ -33,14 +36,15 @@ export default function Home() {
     ZKLOGIN_ACCONTS,
     null
   );
-  const [generated, setGenerated] = useState(false);
-  const { container } = useLottie(loginAnimationData, true);
-  const { container: googleAnimationContainer } = useLottie(
-    googleAnimationData,
-    true
+  const [objectid, setObjectid] = useLocalStorage<string | null>(
+    OBJECT_ID,
+    null
   );
-  const zkLoginSetup = useZkLoginSetup();
-  const [colors, setColors] = useState({
+  const [zkAddress, setZkAddress] = useLocalStorage<string | null>(
+    ZKLOGIN_ADDRESS,
+    null
+  );
+  const [colors, setColors] = useLocalStorage(ZKLOGIN_COLOR, {
     l1: 0xffd1dc,
     l2: 0xaec6cf,
     l3: 0xb39eb5,
@@ -48,10 +52,21 @@ export default function Home() {
     r2: 0xfff5b2,
     r3: 0xffb347,
   });
+  const [generated, setGenerated] = useState(false);
+  const { container } = useLottie(loginAnimationData, true);
+  const { container: googleAnimationContainer } = useLottie(
+    googleAnimationData,
+    true
+  );
+  const zkLoginSetup = useZkLoginSetup();
 
   useEffect(() => {
     if (account) {
+      console.log({ account });
       zkLoginSetup.completeZkLogin(account);
+    }
+    if (objectid) {
+      router.push("/nft");
     }
   }, []);
 
@@ -82,7 +97,10 @@ export default function Home() {
     setModalContent(`🔑 Logging in with ${provider}...`);
 
     await zkLoginSetup.beginZkLogin(provider);
+    console.log(zkLoginSetup.account());
     setAccount(zkLoginSetup.account());
+    console.log(zkLoginSetup.userAddr);
+    // setZkAddress(zkLoginSetup.userAddr);
     const loginUrl = zkLoginSetup.loginUrl();
     window.location.replace(loginUrl);
   };
@@ -115,6 +133,7 @@ export default function Home() {
       setErr("Double Mint rejected...");
       throw new Error("objectType not found");
     }
+    setObjectid(matchingObject.objectId);
     // @ts-ignore
     const parts = splitObjectId(matchingObject.objectId);
     console.log({ parts });
@@ -142,9 +161,6 @@ export default function Home() {
   };
 
   return (
-    // <header className="flex justify-end items-start w-full hidden">
-    //   <ConnectButton />
-    // </header>
     // @ts-ignore
     <div
       className="flex flex-col items-center justify-center w-full"
@@ -233,6 +249,8 @@ export default function Home() {
             setLoading(true);
             const account = zkLoginSetup.account();
             console.log("account", account);
+            console.log(zkLoginSetup.userAddr);
+            setZkAddress(zkLoginSetup.userAddr);
             const txb = new TransactionBlock();
             const result = await moveCallSponsored(txb, account);
             if (result.effects?.status.status === "success") {

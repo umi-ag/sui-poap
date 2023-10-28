@@ -5,7 +5,7 @@ import {
 } from "@mysten/sui.js/transactions";
 import { GAS_BUDGET, SENDER_ADDRESS, sponsor, suiClient } from "src/config/sui";
 // import { firstMint } from "../moveCall/coco/my-nft/functions";
-import { PACKAGE_ID, VISITOR_LIST_ID } from "src/config";
+import { PACKAGE_ID, VISITOR_LIST_ID, CLOCK_ID } from "src/config";
 // import { SENDER_ADDRESS, GAS_BUDGET } from "@/config/sui";
 
 // Create a programmable transaction block to send an object from the sender to the recipient
@@ -40,7 +40,7 @@ export function firstMint(txb: TransactionBlock, args: FirstMintArgs) {
     target: `${PACKAGE_ID}::nft::first_mint`,
     arguments: [
       txb.pure(VISITOR_LIST_ID),
-      // txb.pure(args.name, `0x1::string::String`),
+      txb.pure(CLOCK_ID),
       txb.pure(args.name),
       txb.pure(args.description),
       txb.pure(args.url),
@@ -52,7 +52,6 @@ export function firstMint(txb: TransactionBlock, args: FirstMintArgs) {
 export const moveCallMintNft = (
   txb: TransactionBlock,
   props: {
-    // list: string;
     name: string;
     description: string;
     url: string;
@@ -60,7 +59,6 @@ export const moveCallMintNft = (
   }
 ) => {
   firstMint(txb, {
-    // list: props.list,
     name: props.name,
     description: props.description,
     url: props.url,
