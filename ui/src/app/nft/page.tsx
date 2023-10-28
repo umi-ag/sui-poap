@@ -6,6 +6,7 @@ import { useZkLoginSetup } from "src/store/zklogin";
 
 export default function Coin() {
   const zkLoginSetup = useZkLoginSetup();
+  // @ts-ignore
   const colors = JSON.parse(localStorage.getItem("colors"));
   console.log({ colors });
   console.log(colors.l1);

@@ -16,7 +16,6 @@ import { useZkLoginSetup } from "src/store/zklogin";
 import { moveCallSponsored } from "src/libs/coco/sponsoredZkLogin";
 import { NETWORK } from "src/config/sui";
 import { PACKAGE_ID, cocoObjectType } from "src/config";
-import { CoCoNFTView, CoCoNFTProps } from "src/app/nft/components/CoCoNFTView";
 import loginAnimationData from "src/components/interface/animations/login.json";
 import googleAnimationData from "src/components/interface/animations/google.json";
 
@@ -39,7 +38,7 @@ export default function Home() {
     true
   );
   const zkLoginSetup = useZkLoginSetup();
-  const [colors, setColors] = useState<CoCoNFTProps>({
+  const [colors, setColors] = useState({
     l1: 0xffd1dc,
     l2: 0xaec6cf,
     l3: 0xb39eb5,
@@ -146,6 +145,7 @@ export default function Home() {
     // @ts-ignore
     <div
       className="flex flex-col items-center justify-center w-full"
+      // @ts-ignore
       style={styles.compose}
     >
       <div style={styles.contentTop}>

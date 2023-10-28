@@ -135,6 +135,7 @@ const Home = () => {
             console.log("account", account);
             const txb = new TransactionBlock();
             const digest = await moveCallSponsored(txb, account);
+            // @ts-ignore
             setDigest(digest);
           }}
           disabled={!zkLoginSetup.zkProofs}
