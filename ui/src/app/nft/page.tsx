@@ -3,6 +3,7 @@
 
 import ThreeScene from "./components/ThreeScene";
 import React, { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { useZkLoginSetup } from "src/store/zklogin";
 import style from "../styles/login.module.css";
 import { shortenAddress } from "src/utils";
@@ -14,6 +15,7 @@ import {
 } from "src/config";
 
 export default function Coin() {
+  const router = useRouter();
   const zkLoginSetup = useZkLoginSetup();
   const [colors, setColors] = useState(null);
   const [objectId, setObjectId] = useState(null);
@@ -21,17 +23,19 @@ export default function Coin() {
 
   useEffect(() => {
     // @ts-ignore
+    const addr = JSON.parse(localStorage.getItem(ZKLOGIN_ADDRESS));
+    console.log({ addr });
+    if (!addr) {
+      router.push("/");
+    }
+    setAddress(addr);
+    // @ts-ignore
     const localColors = JSON.parse(localStorage.getItem(ZKLOGIN_COLOR));
     setColors(localColors);
     // @ts-ignore
     const obj_id = JSON.parse(localStorage.getItem(OBJECT_ID));
     console.log({ obj_id });
     setObjectId(obj_id);
-
-    // @ts-ignore
-    const addr = JSON.parse(localStorage.getItem(ZKLOGIN_ADDRESS));
-    console.log({ addr });
-    setAddress(addr);
   }, []);
 
   if (!colors) return null;
