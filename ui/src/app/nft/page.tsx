@@ -25,16 +25,16 @@ export default function Coin() {
     // @ts-ignore
     const addr = JSON.parse(localStorage.getItem(ZKLOGIN_ADDRESS));
     console.log({ addr });
-    if (!addr) {
+    // @ts-ignore
+    const obj_id = JSON.parse(localStorage.getItem(OBJECT_ID));
+    console.log({ obj_id });
+    if (!addr || !obj_id) {
       router.push("/");
     }
     setAddress(addr);
     // @ts-ignore
     const localColors = JSON.parse(localStorage.getItem(ZKLOGIN_COLOR));
     setColors(localColors);
-    // @ts-ignore
-    const obj_id = JSON.parse(localStorage.getItem(OBJECT_ID));
-    console.log({ obj_id });
     setObjectId(obj_id);
   }, []);
 
