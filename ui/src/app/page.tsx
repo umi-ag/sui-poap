@@ -156,10 +156,10 @@ export default function Home() {
     }
 
     if (!zkLoginSetup.zkProofs && zkLoginSetup.isProofsLoading) {
-      return "Loading zk proofs...";
+      return "ZK証明を生成中...";
     }
 
-    return "Ready!";
+    return "完了!";
   };
 
   const updateColors = (result: any) => {
@@ -309,8 +309,7 @@ export default function Home() {
               ? "bg-slate-800"
               : "bg-blue-600 hover:bg-slate-700"
           }`}
-          disabled={!zkLoginSetup.zkProofs}
-          // disabled={loading}
+          disabled={!zkLoginSetup.zkProofs || loading}
         >
           {loading ? "Loading..." : "Mint"}
         </button>
