@@ -224,9 +224,6 @@ export default function Home() {
           <span className="text-2xl">presented by</span> Umi Labs
         </p>
       </div>
-      {/* <div id="network-indicator" className="mb-4">
-        <label className="text-lg font-bold text-white">{NETWORK}</label>
-      </div> */}
       <div id="login-buttons" className="section mb-8">
         {openIdProviders.map((provider) => (
           <button

@@ -35,10 +35,6 @@ export default function Coin() {
   }, []);
 
   if (!colors) return null;
-  // @ts-ignore
-  // const colors = JSON.parse(localStorage.getItem("colors"));
-  // console.log({ colors });
-  // console.log(colors.l1);
   const hexColors = {
     // @ts-ignore
     l1: "0x" + colors.l1.toString(16).padStart(6, "0"),
