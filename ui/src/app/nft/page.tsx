@@ -124,6 +124,27 @@ export default function Coin() {
             )}
           </div>
         </div>
+        <div className="flex flex-col">
+          <div className="flex justify-center">
+            <p
+              className={`${style.mySpecialFont} mt-5 text-center text-white text-2xl font-bold leading-9`}
+            >
+              Link:
+            </p>
+            <b
+              className={`${style.mySpecialFont} mt-5 text-center text-white text-2xl font-bold leading-9 ml-2`}
+            >
+              <a
+                className="text-blue-400 underline"
+                href="https://links.umilabs.org/movejp2310"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                https://links.umilabs.org/movejp2310
+              </a>
+            </b>
+          </div>
+        </div>
       </div>
       <div className="mt-30">
         <ThreeScene props={props} />
