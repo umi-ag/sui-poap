@@ -140,7 +140,7 @@ export default function Coin() {
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                https://links.umilabs.org/movejp2310
+                links.umilabs.org/movejp2310
               </a>
             </b>
           </div>
