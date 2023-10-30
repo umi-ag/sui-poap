@@ -28,8 +28,6 @@ module coco::nft {
         name: String,
         description: String,
         img_url: String,
-        count: u64,
-        date:  vec_set::VecSet<String>,
     }
 
     struct VisitorList has key, store {
@@ -45,6 +43,18 @@ module coco::nft {
     // fun date_key(): String {
     //     string::utf8(b"date")
     // }
+
+    fun count_key(): String {
+        string::utf8(b"count")
+    }
+
+    fun liked_key(): String {
+        string::utf8(b"liked")
+    }
+
+    fun date_key(): String {
+        string::utf8(b"date_list")
+    }
 
     fun item_key(): String {
         string::utf8(b"item")
@@ -108,7 +118,7 @@ module coco::nft {
             expired_at: expired_at,
             visitors: vec_set::empty<address>(),
         };
-        transfer::share_object(list);
+        transfer::public_share_object(list);
     }
 
     /// Anyone can mint their `CoCoNFT`!
@@ -127,9 +137,11 @@ module coco::nft {
             name: name,
             description: description,
             img_url: img_url,
-            count: 1,
-            date: vec_set::empty<String>(),
+            // count: 1,
+            // date: vec_set::empty<String>(),
         };
+        df::add(&mut nft.id, count_key(), 1);
+        df::add(&mut nft.id, date_key(), vec_set::empty<String>());
         nft
     }
 
@@ -144,7 +156,9 @@ module coco::nft {
     ) {
         let nft = mint(list, clock, name, description, url, ctx);
 
-        vec_set::insert(&mut nft.date, date);
+        let date_set: &mut VecSet<String> = df::borrow_mut(&mut nft.id, date_key());
+        vec_set::insert(date_set, date);
+        // vec_set::insert(&mut nft.date, date);
 
         transfer::public_transfer(nft, tx_context::sender(ctx));
     }
@@ -158,8 +172,13 @@ module coco::nft {
         item_url: String,
         ctx: &mut TxContext
     ) {
-        nft.count = nft.count + 1;
-        vec_set::insert(&mut nft.date, date);
+        let count: &mut u64 = df::borrow_mut(&mut nft.id, count_key());
+        *count = *count + 1;
+        // vec_set::insert(date_set, date);
+        // nft.count = nft.count + 1;
+        let date_set: &mut VecSet<String> = df::borrow_mut(&mut nft.id, date_key());
+        vec_set::insert(date_set, date);
+        // vec_set::insert(&mut nft.date, date);
         let item = item::new_item(item_name, item_description, item_url, date, ctx);
         dof::add(&mut nft.id, item_key(), item);
     }

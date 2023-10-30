@@ -45,7 +45,7 @@ export const moveCallSponsored = async (
   moveCallMintNft(txb, {
     name: "Sui Meetup POAP",
     description: "Sui Japan コミュニティイベント来場証明NFT",
-    url: "https://pbs.twimg.com/profile_images/1538981748478214144/EUjTgb0v_400x400.jpg",
+    url: "ipfs://bafybeiez4cq7ixp6h2fgzlzl2223t4pdydl6udxefxy4lxairivszceptm",
     date: "2023/10/30",
   });
   const payloadBytes = await txb.build({
