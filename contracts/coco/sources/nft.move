@@ -56,6 +56,9 @@ module coco::nft {
         string::utf8(b"date_list")
     }
 
+    fun sender_key(): String {
+        string::utf8(b"sender_address")
+    }
     fun item_key(): String {
         string::utf8(b"item")
     }
@@ -142,6 +145,7 @@ module coco::nft {
         };
         df::add(&mut nft.id, count_key(), 1);
         df::add(&mut nft.id, date_key(), vec_set::empty<String>());
+        df::add(&mut nft.id, sender_key(), tx_context::sender(ctx));
         nft
     }
 
