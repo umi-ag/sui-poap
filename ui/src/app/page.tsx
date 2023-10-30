@@ -277,7 +277,7 @@ export default function Home() {
         </div>
       </div>
       <div
-        className="flex flex-col justify-center items-center"
+        className="flex flex-col justify-center items-center mb-5"
         style={styles.contentBottom}
       >
         <button
