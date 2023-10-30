@@ -1,11 +1,11 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  runtime: 'edge',
+  runtime: "edge",
   images: {
     domains: [
       // 'storage.googleapis.com',
-      'user-images.githubusercontent.com',
-      'assets.coingecko.com',
+      "user-images.githubusercontent.com",
+      "assets.coingecko.com",
     ],
   },
   experimental: {
@@ -13,4 +13,4 @@ const nextConfig = {
   },
 };
 
-module.exports = nextConfig
+module.exports = nextConfig;

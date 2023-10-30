@@ -2,14 +2,19 @@
 /// mint their CoCoNFT. Shows how to initialize the `Publisher` and how
 /// to use it to get the `Display<CoCoNFT>` object - a way to describe a
 /// type for the ecosystem.
-module coco::my_nft {
-    use sui::tx_context::{sender, TxContext};
+module coco::nft {
     use std::string::{utf8, String, Self};
+    use std::vector::{Self};
     use sui::transfer;
     use sui::vec_set::{Self, VecSet};
     use sui::object::{Self, UID};
     use sui::dynamic_field as df;
     use sui::dynamic_object_field as dof;
+    use sui::tx_context::{Self, TxContext};
+    use sui::clock::{Self, Clock};
+
+    const EDoubleMint: u64 = 1001;
+    const EExpiredAt: u64 = 1002;
 
     // The creator bundle: these two packages often go together.
     use sui::package;
@@ -24,14 +29,22 @@ module coco::my_nft {
         description: String,
         img_url: String,
         count: u64,
+        date:  vec_set::VecSet<String>,
+    }
+
+    struct VisitorList has key, store {
+        id: UID,
+        date: String,
+        expired_at: u64,
+        visitors: vec_set::VecSet<address>,
     }
 
     /// One-Time-Witness for the module.
-    struct MY_NFT has drop {}
+    struct NFT has drop {}
 
-    fun date_key(): String {
-        string::utf8(b"date")
-    }
+    // fun date_key(): String {
+    //     string::utf8(b"date")
+    // }
 
     fun item_key(): String {
         string::utf8(b"item")
@@ -44,7 +57,7 @@ module coco::my_nft {
     ///
     /// Keys and values are set in the initializer but could also be
     /// set after publishing if a `Publisher` object was created.
-    fun init(otw: MY_NFT, ctx: &mut TxContext) {
+    fun init(otw: NFT, ctx: &mut TxContext) {
         let keys = vector[
             utf8(b"name"),
             utf8(b"link"),
@@ -80,47 +93,75 @@ module coco::my_nft {
         // Commit first version of `Display` to apply changes.
         display::update_version(&mut display);
 
-        transfer::public_transfer(publisher, sender(ctx));
-        transfer::public_transfer(display, sender(ctx));
+        transfer::public_transfer(publisher, tx_context::sender(ctx));
+        transfer::public_transfer(display, tx_context::sender(ctx));
+    }
+
+    public entry fun create_list(
+        date: String,
+        expired_at: u64,
+        ctx: &mut TxContext,
+    ){
+        let list = VisitorList {
+            id: object::new(ctx),
+            date: date,
+            expired_at: expired_at,
+            visitors: vec_set::empty<address>(),
+        };
+        transfer::share_object(list);
     }
 
     /// Anyone can mint their `CoCoNFT`!
     public fun mint(
+        list: &mut VisitorList,
+        clock: &Clock,
         name: String,
         description: String,
         img_url: String,
         ctx: &mut TxContext,
     ): CoCoNFT {
+        assert!(clock::timestamp_ms(clock) < list.expired_at, EExpiredAt);
+        vec_set::insert(&mut list.visitors, tx_context::sender(ctx));
         let nft = CoCoNFT {
             id: object::new(ctx),
             name: name,
             description: description,
             img_url: img_url,
             count: 1,
+            date: vec_set::empty<String>(),
         };
-        df::add(&mut nft.id, date_key(), vec_set::empty<String>());
         nft
     }
 
     public entry fun first_mint(
-        origin_name: String,
-        origin_description: String,
-        origin_url: String,
-        item_name: String,
-        item_description: String,
-        item_url: String,
+        list: &mut VisitorList,
+        clock: &Clock,
+        name: String,
+        description: String,
+        url: String,
         date: String,
         ctx: &mut TxContext,
     ) {
-        let nft = mint(origin_name, origin_description, origin_url, ctx);
+        let nft = mint(list, clock, name, description, url, ctx);
 
-        let date_set: &mut VecSet<String> = df::borrow_mut(&mut nft.id, date_key());
-        vec_set::insert(date_set, date);
+        vec_set::insert(&mut nft.date, date);
 
+        transfer::public_transfer(nft, tx_context::sender(ctx));
+    }
+
+    public entry fun add_object(
+        list: &mut VisitorList,
+        nft: &mut CoCoNFT,
+        date: String,
+        item_name: String,
+        item_description: String,
+        item_url: String,
+        ctx: &mut TxContext
+    ) {
+        nft.count = nft.count + 1;
+        vec_set::insert(&mut nft.date, date);
         let item = item::new_item(item_name, item_description, item_url, date, ctx);
         dof::add(&mut nft.id, item_key(), item);
-
-        transfer::public_transfer(nft, sender(ctx));
     }
 
     // public entry fun compose_item(

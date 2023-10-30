@@ -13,8 +13,7 @@ export const SENDER_ADDRESS =
   "0xfe5877ace271d2bd5446d868939dc64dd69d9326930cc556cdd15a158fd9943d";
 
 // Shinami Gas Station endpoint:
-const SPONSOR_RPC_URL =
-  `https://api.shinami.com/gas/v1/${process.env.NEXT_PUBLIC_GAS_ACCESS_KEY}`;
+const SPONSOR_RPC_URL = `https://api.shinami.com/gas/v1/${process.env.NEXT_PUBLIC_GAS_ACCESS_KEY}`;
 console.log({ SPONSOR_RPC_URL });
 
 // // Shinami Sui Node endpointu

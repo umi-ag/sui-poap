@@ -60,7 +60,7 @@ export const useZkLoginSetup = create<
       provider,
       maxEpoch,
       ephemeralPublicKey: toBigIntBE(
-        Buffer.from(ephemeralKeyPair.getPublicKey().toSuiBytes()),
+        Buffer.from(ephemeralKeyPair.getPublicKey().toSuiBytes())
       ).toString(),
       ephemeralPrivateKey: ephemeralKeyPair.export().privateKey,
       randomness,
@@ -70,7 +70,7 @@ export const useZkLoginSetup = create<
       // @ts-ignore
       ephemeralKeyPair.getPublicKey(),
       maxEpoch,
-      randomness,
+      randomness
     );
 
     set({ randomness, nonce });
@@ -123,9 +123,8 @@ export const useZkLoginSetup = create<
     set({
       jwt,
       sub: jwtPayload.sub,
-      aud: typeof jwtPayload.aud === "string"
-        ? jwtPayload.aud
-        : jwtPayload.aud[0],
+      aud:
+        typeof jwtPayload.aud === "string" ? jwtPayload.aud : jwtPayload.aud[0],
     });
   },
   account: () => ({
@@ -143,16 +142,13 @@ export const useZkLoginSetup = create<
   }),
 }));
 
-const getLoginUrl = (props: {
-  provider: OpenIdProvider;
-  nonce: string;
-}) => {
+const getLoginUrl = (props: { provider: OpenIdProvider; nonce: string }) => {
   const REDIRECT_URI = window.location.origin;
   const urlParamsBase = {
     nonce: props.nonce,
     state: new URLSearchParams({
       // redirect_uri: REDIRECT_URI,
-      redirect_uri: `${REDIRECT_URI}/welcome`,
+      redirect_uri: `${REDIRECT_URI}`,
     }).toString(),
     //   redirect_uri: window.location.origin + "/login",
     redirect_uri: "https://zklogin-dev-redirect.vercel.app/api/auth",

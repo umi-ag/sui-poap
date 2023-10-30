@@ -9,27 +9,26 @@ import { suiClient } from "src/config/sui";
 
 // /api.shinami.com/gas/v1/sui_mainnet_a3d005b4000b794b178162d50c7e2965
 const shinamiAccountKey = "sui_mainnet_a3d005b4000b794b178162d50c7e2965";
-const shinamiProviderUrl =
-  `https://api.shinami.com/gas/v1/${shinamiAccountKey}`;
+const shinamiProviderUrl = `https://api.shinami.com/gas/v1/${shinamiAccountKey}`;
 const shinamiClient = rpcClient<SponsorRpc>(shinamiProviderUrl);
 
 const fetchSponsoredTransaction = async (
   payloadBytes: Uint8Array,
-  userAddress: string,
+  userAddress: string
 ) => {
   const payloadBase64 = btoa(
-    payloadBytes.reduce((data, byte) => data + String.fromCharCode(byte), ""),
+    payloadBytes.reduce((data, byte) => data + String.fromCharCode(byte), "")
   );
 
   const GAS_BUDGET = 5e7;
   const sponsoredResponse = await shinamiClient.gas_sponsorTransactionBlock(
     payloadBase64,
     userAddress,
-    GAS_BUDGET,
+    GAS_BUDGET
   );
-  const sponsoredStatus = await shinamiClient
-    .gas_getSponsoredTransactionBlockStatus(
-      sponsoredResponse.txDigest,
+  const sponsoredStatus =
+    await shinamiClient.gas_getSponsoredTransactionBlockStatus(
+      sponsoredResponse.txDigest
     );
   console.log("Sponsorship Status:", sponsoredStatus);
 
@@ -40,18 +39,13 @@ const fetchSponsoredTransaction = async (
 
 export const moveCallSponsored = async (
   txb: TransactionBlock,
-  account: Account,
+  account: Account
 ) => {
   txb.setSender(account.userAddr);
   moveCallMintNft(txb, {
-    origin_name: "takaya",
-    origin_description: "takaya's icon",
-    origin_url:
-      "https://pbs.twimg.com/profile_images/1538981748478214144/EUjTgb0v_400x400.jpg",
-    item_name: "imataka",
-    item_description: "hey",
-    item_url:
-      "https://toy.bandai.co.jp/assets/tamagotchi/images/chopper/img_chara01.png",
+    name: "Sui Meetup POAP",
+    description: "Sui Japan コミュニティイベント来場証明NFT",
+    url: "https://pbs.twimg.com/profile_images/1538981748478214144/EUjTgb0v_400x400.jpg",
     date: "2023/10/30",
   });
   const payloadBytes = await txb.build({
@@ -59,7 +53,7 @@ export const moveCallSponsored = async (
     onlyTransactionKind: true,
   });
 
-  console.log('## 2001', payloadBytes)
+  console.log("## 2001", payloadBytes);
 
   const res = await fetch("/api/sponsor", {
     method: "POST",
@@ -67,7 +61,7 @@ export const moveCallSponsored = async (
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      payloadBytes: Buffer.from(payloadBytes).toString('hex'),
+      payloadBytes: Buffer.from(payloadBytes).toString("hex"),
       userAddress: account.userAddr,
     }),
   });
@@ -82,13 +76,12 @@ export const moveCallSponsored = async (
   console.log("sponsoredResponse", sponsoredResponse);
   // alert("##2");
 
-
   // ★ shinamiから受け取ったtxBytesからTransactionBlockを作成
   // @ts-ignore
   const gaslessTxb = TransactionBlock.from(sponsoredResponse.txBytes);
 
   const ephemeralKeyPair = Ed25519Keypair.fromSecretKey(
-    Buffer.from(account.ephemeralPrivateKey, "base64"),
+    Buffer.from(account.ephemeralPrivateKey, "base64")
   );
   const { bytes, signature: userSignature } = await gaslessTxb.sign({
     client: suiClient,
@@ -99,7 +92,7 @@ export const moveCallSponsored = async (
     BigInt(account.userSalt),
     "sub",
     account.sub,
-    account.aud,
+    account.aud
   ).toString();
 
   // Serialize the zkLogin signature by combining the ZK proof (inputs), the maxEpoch,
@@ -121,10 +114,11 @@ export const moveCallSponsored = async (
     requestType: "WaitForLocalExecution",
     options: {
       showEffects: true,
+      showObjectChanges: true,
     },
   });
 
   console.log("r", r);
 
-  return r.digest;
+  return r;
 };
