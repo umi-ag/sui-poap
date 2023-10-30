@@ -193,7 +193,11 @@ const getZkProof = async (props: {
   jwt: string;
   salt: string;
 }) => {
-  const url = "https://prover.umilabs.org/v1";
+  // azure
+  // const url = "https://prover.umilabs.org/v1";
+  // fly.io
+  const url = "https://zklogin-prover-fe.fly.dev/v1";
+
   const response = await fetch(url, {
     method: "POST",
     headers: {
