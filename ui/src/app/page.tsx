@@ -25,6 +25,7 @@ import {
   ZKLOGIN_ADDRESS,
   ZKLOGIN_COLOR,
 } from "src/config";
+import { getOwnedCocoObjectId } from "src/utils/getObject";
 
 export default function Home() {
   const router = useRouter();
@@ -61,14 +62,52 @@ export default function Home() {
   const zkLoginSetup = useZkLoginSetup();
 
   useEffect(() => {
-    if (account) {
-      console.log({ account });
-      zkLoginSetup.completeZkLogin(account);
-    }
-    if (objectid) {
-      router.push("/nft");
-    }
+    const fetchData = async () => {
+      if (account) {
+        console.log({ account });
+        zkLoginSetup.completeZkLogin(account);
+        // setZkAddress(zkLoginSetup.userAddr);
+      }
+      if (objectid) {
+        router.push("/nft");
+      }
+      if (zkAddress) {
+        console.log("get object");
+        const coco_id = await getOwnedCocoObjectId(zkAddress, cocoObjectType);
+        if (coco_id !== "") {
+          setObjectid(coco_id);
+          router.push("/nft");
+        }
+      }
+    };
+
+    fetchData();
   }, []);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const coco_id = await getOwnedCocoObjectId(
+        zkLoginSetup.userAddr,
+        cocoObjectType
+      );
+      if (coco_id !== "") {
+        setObjectid(coco_id);
+        setZkAddress(zkLoginSetup.userAddr);
+        const parts = splitObjectId(coco_id);
+        console.log({ parts });
+        setColors({
+          l1: parseInt(parts[0], 16),
+          l2: parseInt(parts[1], 16),
+          l3: parseInt(parts[2], 16),
+          r1: parseInt(parts[3], 16),
+          r2: parseInt(parts[4], 16),
+          r3: parseInt(parts[5], 16),
+        });
+        router.push("/nft");
+      }
+    };
+    fetchData();
+  }, [zkLoginSetup.userAddr]);
 
   useEffect(() => {
     localStorage.setItem("colors", JSON.stringify(colors));
@@ -117,10 +156,10 @@ export default function Home() {
     }
 
     if (!zkLoginSetup.zkProofs && zkLoginSetup.isProofsLoading) {
-      return "Loading zk proofs...";
+      return "ZK証明を生成中...";
     }
 
-    return "Ready!";
+    return "完了!";
   };
 
   const updateColors = (result: any) => {
@@ -185,9 +224,6 @@ export default function Home() {
           <span className="text-2xl">presented by</span> Umi Labs
         </p>
       </div>
-      {/* <div id="network-indicator" className="mb-4">
-        <label className="text-lg font-bold text-white">{NETWORK}</label>
-      </div> */}
       <div id="login-buttons" className="section mb-8">
         {openIdProviders.map((provider) => (
           <button
@@ -241,7 +277,7 @@ export default function Home() {
         </div>
       </div>
       <div
-        className="flex flex-col justify-center items-center"
+        className="flex flex-col justify-center items-center mb-5"
         style={styles.contentBottom}
       >
         <button
@@ -270,8 +306,7 @@ export default function Home() {
               ? "bg-slate-800"
               : "bg-blue-600 hover:bg-slate-700"
           }`}
-          disabled={!zkLoginSetup.zkProofs}
-          // disabled={loading}
+          disabled={!zkLoginSetup.zkProofs || loading}
         >
           {loading ? "Loading..." : "Mint"}
         </button>

@@ -3,6 +3,7 @@
 
 import ThreeScene from "./components/ThreeScene";
 import React, { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { useZkLoginSetup } from "src/store/zklogin";
 import style from "../styles/login.module.css";
 import { shortenAddress } from "src/utils";
@@ -14,6 +15,7 @@ import {
 } from "src/config";
 
 export default function Coin() {
+  const router = useRouter();
   const zkLoginSetup = useZkLoginSetup();
   const [colors, setColors] = useState(null);
   const [objectId, setObjectId] = useState(null);
@@ -21,24 +23,22 @@ export default function Coin() {
 
   useEffect(() => {
     // @ts-ignore
-    const localColors = JSON.parse(localStorage.getItem(ZKLOGIN_COLOR));
-    setColors(localColors);
+    const addr = JSON.parse(localStorage.getItem(ZKLOGIN_ADDRESS));
+    console.log({ addr });
     // @ts-ignore
     const obj_id = JSON.parse(localStorage.getItem(OBJECT_ID));
     console.log({ obj_id });
-    setObjectId(obj_id);
-
-    // @ts-ignore
-    const addr = JSON.parse(localStorage.getItem(ZKLOGIN_ADDRESS));
-    console.log({ addr });
+    if (!addr || !obj_id) {
+      router.push("/");
+    }
     setAddress(addr);
+    // @ts-ignore
+    const localColors = JSON.parse(localStorage.getItem(ZKLOGIN_COLOR));
+    setColors(localColors);
+    setObjectId(obj_id);
   }, []);
 
   if (!colors) return null;
-  // @ts-ignore
-  // const colors = JSON.parse(localStorage.getItem("colors"));
-  // console.log({ colors });
-  // console.log(colors.l1);
   const hexColors = {
     // @ts-ignore
     l1: "0x" + colors.l1.toString(16).padStart(6, "0"),
