@@ -1,4 +1,3 @@
-// import { SponsorRpc } from "src/types";
 import { rpcClient } from "typed-rpc";
 
 const shinamiAccountKey = "sui_mainnet_a3d005b4000b794b178162d50c7e2965";

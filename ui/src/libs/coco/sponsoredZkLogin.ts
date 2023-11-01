@@ -1,9 +1,8 @@
-import { rpcClient } from "typed-rpc";
 import { TransactionBlock } from "@mysten/sui.js/transactions";
 import { Ed25519Keypair } from "@mysten/sui.js/keypairs/ed25519";
 import { genAddressSeed, getZkLoginSignature } from "@mysten/zklogin";
 import { SerializedSignature } from "@mysten/sui.js/cryptography";
-import { Account, SponsorRpc } from "src/types";
+import { Account } from "src/types";
 import { moveCallMintNft } from ".";
 import { suiClient } from "src/config/sui";
 

@@ -7,12 +7,7 @@ import { useRouter } from "next/navigation";
 import { useZkLoginSetup } from "src/store/zklogin";
 import style from "../styles/login.module.css";
 import { shortenAddress } from "src/utils";
-import {
-  ZKLOGIN_ACCONTS,
-  OBJECT_ID,
-  ZKLOGIN_ADDRESS,
-  ZKLOGIN_COLOR,
-} from "src/config";
+import { OBJECT_ID, ZKLOGIN_ADDRESS, ZKLOGIN_COLOR } from "src/config";
 
 export default function Coin() {
   const router = useRouter();
