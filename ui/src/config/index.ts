@@ -13,9 +13,9 @@ export const CLOCK_ID = "0x6";
 
 export const cocoObjectType = `${PACKAGE_ID}::nft::CoCoNFT`;
 
-export const ZKLOGIN_ACCONTS = "zklogin-demo.accounts";
-export const OBJECT_ID = "zklogin-demo.objectid";
-export const ZKLOGIN_ADDRESS = "zklogin-demo.address";
-export const ZKLOGIN_COLOR = "zklogin-demo.color";
+export const ZKLOGIN_ACCONTS = `zklogin-${PACKAGE_ID}.accounts`;
+export const OBJECT_ID = `zklogin-${PACKAGE_ID}.objectid`;
+export const ZKLOGIN_ADDRESS = `zklogin-${PACKAGE_ID}.address`;
+export const ZKLOGIN_COLOR = `zklogin-${PACKAGE_ID}.color`;
 
 export const EVENT_CODE = "zklogin";

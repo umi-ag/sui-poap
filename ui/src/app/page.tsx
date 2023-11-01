@@ -12,7 +12,6 @@ import { useZkLoginSetup } from "src/store/zklogin";
 import { moveCallSponsored } from "src/libs/coco/sponsoredZkLogin";
 import { shortenAddress } from "src/utils";
 import { PACKAGE_ID, cocoObjectType } from "src/config";
-import loginAnimationData from "src/components/interface/animations/login.json";
 import googleAnimationData from "src/components/interface/animations/google.json";
 import {
   ZKLOGIN_ACCONTS,
@@ -21,6 +20,24 @@ import {
   ZKLOGIN_COLOR,
 } from "src/config";
 import { getOwnedCocoObjectId } from "src/utils/getObject";
+
+const styles = {
+  compose: {
+    background: "url('/login/background.png') center / cover no-repeat",
+    width: "100vw",
+    height: "100vh",
+    boxSizing: "border-box",
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "space-between",
+  },
+  contentTop: {
+    paddingTop: "10vh",
+  },
+  contentBottom: {
+    paddingBottom: "10vh",
+  },
+};
 
 export default function Home() {
   const router = useRouter();
@@ -48,8 +65,6 @@ export default function Home() {
     r2: 0xfff5b2,
     r3: 0xffb347,
   });
-  const [generated, setGenerated] = useState(false);
-  const { container } = useLottie(loginAnimationData, true);
   const { container: googleAnimationContainer } = useLottie(
     googleAnimationData,
     true
@@ -57,25 +72,23 @@ export default function Home() {
   const zkLoginSetup = useZkLoginSetup();
 
   useEffect(() => {
-    const fetchData = async () => {
-      if (account) {
-        console.log({ account });
-        zkLoginSetup.completeZkLogin(account);
-      }
-      if (objectid) {
-        // router.push("/nft");
-      }
+    if (account) {
+      zkLoginSetup.completeZkLogin(account);
+    }
+    if (objectid) {
+      router.push("/nft");
+    }
+    const getObject = async () => {
       if (zkAddress) {
-        console.log("get object");
         const coco_id = await getOwnedCocoObjectId(zkAddress, cocoObjectType);
         if (coco_id !== "") {
           setObjectid(coco_id);
-          // router.push("/nft");
+          router.push("/nft");
         }
       }
     };
 
-    fetchData();
+    getObject();
   }, []);
 
   useEffect(() => {
@@ -97,7 +110,7 @@ export default function Home() {
           r2: parseInt(parts[4], 16),
           r3: parseInt(parts[5], 16),
         });
-        // router.push("/nft");
+        router.push("/nft");
       }
     };
     fetchData();
@@ -107,24 +120,6 @@ export default function Home() {
     localStorage.setItem("colors", JSON.stringify(colors));
   }, [colors]);
 
-  const styles = {
-    compose: {
-      background: "url('/login/background.png') center / cover no-repeat",
-      width: "100vw",
-      height: "100vh",
-      boxSizing: "border-box",
-      display: "flex",
-      flexDirection: "column",
-      justifyContent: "space-between",
-    },
-    contentTop: {
-      paddingTop: "10vh",
-    },
-    contentBottom: {
-      paddingBottom: "10vh",
-    },
-  };
-
   // https://docs.sui.io/build/zk_login#set-up-oauth-flow
   const beginZkLogin = async (provider: OpenIdProvider) => {
     setModalContent(`🔑 Logging in with ${provider}...`);
@@ -133,7 +128,6 @@ export default function Home() {
     console.log(zkLoginSetup.account());
     setAccount(zkLoginSetup.account());
     console.log(zkLoginSetup.userAddr);
-    // setZkAddress(zkLoginSetup.userAddr);
     const loginUrl = zkLoginSetup.loginUrl();
     window.location.replace(loginUrl);
   };

@@ -27,6 +27,8 @@ import * as url from "./url/structs";
 import * as vecMap from "./vec-map/structs";
 import * as vecSet from "./vec-set/structs";
 import * as versioned from "./versioned/structs";
+import * as zkloginVerifiedId from "./zklogin-verified-id/structs";
+import * as zkloginVerifiedIssuer from "./zklogin-verified-issuer/structs";
 import {StructClassLoader} from "../../../_framework/loader";
 
 export function registerClasses(loader: StructClassLoader) { loader.register(groth16.Curve);
@@ -43,6 +45,8 @@ loader.register(object.ID);
 loader.register(object.UID);
 loader.register(transfer.Receiving);
 loader.register(clock.Clock);
+loader.register(zkloginVerifiedId.VerifiedID);
+loader.register(zkloginVerifiedIssuer.VerifiedIssuer);
 loader.register(bcs.BCS);
 loader.register(borrow.Referent);
 loader.register(borrow.Borrow);
