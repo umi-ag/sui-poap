@@ -66,17 +66,16 @@ export default function Home() {
       if (account) {
         console.log({ account });
         zkLoginSetup.completeZkLogin(account);
-        // setZkAddress(zkLoginSetup.userAddr);
       }
       if (objectid) {
-        router.push("/nft");
+        // router.push("/nft");
       }
       if (zkAddress) {
         console.log("get object");
         const coco_id = await getOwnedCocoObjectId(zkAddress, cocoObjectType);
         if (coco_id !== "") {
           setObjectid(coco_id);
-          router.push("/nft");
+          // router.push("/nft");
         }
       }
     };
@@ -103,7 +102,7 @@ export default function Home() {
           r2: parseInt(parts[4], 16),
           r3: parseInt(parts[5], 16),
         });
-        router.push("/nft");
+        // router.push("/nft");
       }
     };
     fetchData();
@@ -156,10 +155,10 @@ export default function Home() {
     }
 
     if (!zkLoginSetup.zkProofs && zkLoginSetup.isProofsLoading) {
-      return "ZK証明を生成中...";
+      return "Loading zk proofs...";
     }
 
-    return "完了!";
+    return "Ready!";
   };
 
   const updateColors = (result: any) => {
@@ -219,9 +218,15 @@ export default function Home() {
           <br />
         </p>
         <p
-          className={`${style.mySpecialFont} mt-3 text-center text-white text-3xl font-bold leading-9`}
+          className={`${style.mySpecialFont} flex items-center justify-center mt-3 text-center text-white text-3xl font-bold leading-9 gap-2`}
         >
           <span className="text-2xl">presented by</span> Umi Labs
+          <img
+            src="/logo_v4.png"
+            alt="Umi Labs Logo"
+            style={{ height: "1.25em" }}
+          />
+          {/* <span className="text-2xl">presented by</span> Umi Labs */}
         </p>
       </div>
       <div id="login-buttons" className="section mb-8">
