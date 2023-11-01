@@ -5,25 +5,6 @@ import {
 } from "@mysten/sui.js/transactions";
 import { PACKAGE_ID, VISITOR_LIST_ID, CLOCK_ID } from "src/config";
 
-// Create a programmable transaction block to send an object from the sender to the recipient
-export const progTxnTransfer = () => {
-  // The receiver of a transaction
-  const RECIPIENT_ADDRESS =
-    "0x3360bf32717508a4bd15e4e444ec602b9b534d6f31e5e4255bca30769f7bdba4";
-
-  // For transferring objects transaction
-  const OBJECT_TO_SEND =
-    "0x976affdc1334871709082aedb1d2f84d6d1e33974ecbe33f11ad15be5ead7660";
-
-  const txb = new TransactionBlock();
-
-  txb.transferObjects(
-    [txb.object(OBJECT_TO_SEND)],
-    txb.pure(RECIPIENT_ADDRESS)
-  );
-  return txb;
-};
-
 export interface FirstMintArgs {
   // list: string | TransactionArgument;
   name: string | TransactionArgument;
@@ -34,7 +15,7 @@ export interface FirstMintArgs {
 
 export function firstMint(txb: TransactionBlock, args: FirstMintArgs) {
   return txb.moveCall({
-    target: `${PACKAGE_ID}::nft::first_mint`,
+    target: `${PACKAGE_ID}::issuer::mint`,
     arguments: [
       txb.pure(VISITOR_LIST_ID),
       txb.pure(CLOCK_ID),

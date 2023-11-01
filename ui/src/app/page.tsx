@@ -63,14 +63,14 @@ export default function Home() {
         zkLoginSetup.completeZkLogin(account);
       }
       if (objectid) {
-        router.push("/nft");
+        // router.push("/nft");
       }
       if (zkAddress) {
         console.log("get object");
         const coco_id = await getOwnedCocoObjectId(zkAddress, cocoObjectType);
         if (coco_id !== "") {
           setObjectid(coco_id);
-          router.push("/nft");
+          // router.push("/nft");
         }
       }
     };
@@ -97,7 +97,7 @@ export default function Home() {
           r2: parseInt(parts[4], 16),
           r3: parseInt(parts[5], 16),
         });
-        router.push("/nft");
+        // router.push("/nft");
       }
     };
     fetchData();
