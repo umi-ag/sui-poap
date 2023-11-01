@@ -4,17 +4,13 @@
 import { useLocalStorage } from "usehooks-ts";
 import { useRouter } from "next/navigation";
 import { useLottie } from "src/utils/useLottie";
-import { MouseEventHandler, ReactNode, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { TransactionBlock } from "@mysten/sui.js/transactions";
-// import { ConnectButton, useWalletKit } from "@mysten/wallet-kit";
 import style from "./styles/login.module.css";
-import { GAS_BUDGET, sponsor, suiClient } from "src/config/sui";
 import { Account, OpenIdProvider } from "src/types";
-import { CoCoNFT } from "src/libs/moveCall/coco/my-nft/structs";
 import { useZkLoginSetup } from "src/store/zklogin";
 import { moveCallSponsored } from "src/libs/coco/sponsoredZkLogin";
 import { shortenAddress } from "src/utils";
-import { NETWORK } from "src/config/sui";
 import { PACKAGE_ID, cocoObjectType } from "src/config";
 import loginAnimationData from "src/components/interface/animations/login.json";
 import googleAnimationData from "src/components/interface/animations/google.json";
@@ -67,14 +63,14 @@ export default function Home() {
         zkLoginSetup.completeZkLogin(account);
       }
       if (objectid) {
-        // router.push("/nft");
+        router.push("/nft");
       }
       if (zkAddress) {
         console.log("get object");
         const coco_id = await getOwnedCocoObjectId(zkAddress, cocoObjectType);
         if (coco_id !== "") {
           setObjectid(coco_id);
-          // router.push("/nft");
+          router.push("/nft");
         }
       }
     };
@@ -101,7 +97,7 @@ export default function Home() {
           r2: parseInt(parts[4], 16),
           r3: parseInt(parts[5], 16),
         });
-        // router.push("/nft");
+        router.push("/nft");
       }
     };
     fetchData();
@@ -225,7 +221,6 @@ export default function Home() {
             alt="Umi Labs Logo"
             style={{ height: "1.25em" }}
           />
-          {/* <span className="text-2xl">presented by</span> Umi Labs */}
         </p>
       </div>
       <div id="login-buttons" className="section mb-8">
@@ -234,7 +229,6 @@ export default function Home() {
             className={`btn-login text-white font-bold py-1 px-10 rounded border-[2px] border-gray-300 ${provider}`}
             onClick={() => {
               beginZkLogin(provider);
-              // setGenerated(true);
             }}
             key={provider}
           >

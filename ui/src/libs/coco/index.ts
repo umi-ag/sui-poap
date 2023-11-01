@@ -3,10 +3,7 @@ import {
   TransactionBlock,
   TransactionArgument,
 } from "@mysten/sui.js/transactions";
-import { GAS_BUDGET, SENDER_ADDRESS, sponsor, suiClient } from "src/config/sui";
-// import { firstMint } from "../moveCall/coco/my-nft/functions";
 import { PACKAGE_ID, VISITOR_LIST_ID, CLOCK_ID } from "src/config";
-// import { SENDER_ADDRESS, GAS_BUDGET } from "@/config/sui";
 
 // Create a programmable transaction block to send an object from the sender to the recipient
 export const progTxnTransfer = () => {
@@ -65,12 +62,3 @@ export const moveCallMintNft = (
     date: props.date,
   });
 };
-
-// const privateKeyBase64 = Buffer.from(
-//   process.env.NEXT_PUBLIC_SENDER_PRIVATE_KEY!,
-//   "hex"
-// ).toString("base64");
-// const keypair = Ed25519Keypair.fromSecretKey(fromB64(privateKeyBase64));
-// const signer = new RawSigner(keypair, suiProvider);
-
-// const keypair = buf ? Ed25519Keypair.fromSecretKey(buf.slice(1)) : undefined;
