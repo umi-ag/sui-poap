@@ -166,7 +166,7 @@ export default function Coin() {
           <div className="flex items-center mt-5 ml-2 text-center text-white text-2xl font-bold leading-9 gap-2">
             <span className="text-xl">presented by</span> Umi Labs
             <img
-              src="/logo_v4.png"
+              src="/logo.png"
               alt="Umi Labs Logo"
               style={{ height: "1.25em" }}
             />

@@ -8,7 +8,6 @@ import { MouseEventHandler, ReactNode, useEffect, useState } from "react";
 import { TransactionBlock } from "@mysten/sui.js/transactions";
 // import { ConnectButton, useWalletKit } from "@mysten/wallet-kit";
 import style from "./styles/login.module.css";
-import { moveCallMintNft, sponsorTransactionE2E } from "src/libs/coco";
 import { GAS_BUDGET, sponsor, suiClient } from "src/config/sui";
 import { Account, OpenIdProvider } from "src/types";
 import { CoCoNFT } from "src/libs/moveCall/coco/my-nft/structs";
@@ -222,7 +221,7 @@ export default function Home() {
         >
           <span className="text-2xl">presented by</span> Umi Labs
           <img
-            src="/logo_v4.png"
+            src="/logo.png"
             alt="Umi Labs Logo"
             style={{ height: "1.25em" }}
           />

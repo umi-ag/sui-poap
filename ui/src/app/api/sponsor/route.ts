@@ -3,7 +3,7 @@ import { rpcClient } from "typed-rpc";
 
 const shinamiAccountKey = "sui_mainnet_a3d005b4000b794b178162d50c7e2965";
 const shinamiProviderUrl = `https://api.shinami.com/gas/v1/${shinamiAccountKey}`;
-// const shinamiClient = rpcClient<SponsorRpc>(shinamiProviderUrl);
+
 const shinamiClient = rpcClient(shinamiProviderUrl);
 
 const fetchSponsoredTransaction = async (
@@ -29,8 +29,6 @@ const fetchSponsoredTransaction = async (
       sponsoredResponse.txDigest
     );
   console.log("Sponsorship Status:", sponsoredStatus);
-
-  // consola.info("Sponsored Response:", JSON.stringify(sponsoredResponse, null, 2));
 
   return sponsoredResponse;
 };
