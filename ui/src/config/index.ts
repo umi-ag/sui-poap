@@ -3,17 +3,21 @@ export const isProduction = () => {
   return process.env.NEXT_PUBLIC_ENVIRONMENT === "production";
 };
 
+// mainnet
 export const EVENT_PACKAGE_ID =
   "0x6d2c1faa1b504cccad8c25d64aa7f288d6e3909a6ee79b6a78d69c4884ee913d";
 
+// mainnet
 export const EVENT_VISITOR_LIST_ID =
   "0xd8ef456b25f027a6c38025f2045cfcfa3dbe2c95f239d8255e4e998d6e4855b4";
 
+// testnet
 export const DEMO_PACKAGE_ID =
-  "0x107a2e58f6183d07b4b2e3988bc56857246494049aec7ae2e9501fd77e903e72";
+  "0x40c7d80359d745989efeea40eaf85416b58a641c5faaac1d73a27cbb0be7283f";
 
+// testnet
 export const DEMO_VISITOR_LIST_ID =
-  "0x2cb0b8e45e84d0a0db650a86c798d133a88d074c0ff9ede72c97a1c4d4e5067d";
+  "0x2f8102fc25b5ea59580c7996414ba6016ece3a0a8716058ae4c3d20e27f7be90";
 
 export const CLOCK_ID = "0x6";
 

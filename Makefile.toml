@@ -39,18 +39,6 @@ cd contracts/sui-poap
 sui client publish --gas-budget 123456789 --skip-dependency-verification
 '''
 
-[tasks."test:math"]
-script = '''
-cd contracts/math
-sui move test
-'''
-
-[tasks."deploy:coinhouse"]
-script = '''
-cd contracts/coin-house
-sui client publish --gas-budget 123456789 --skip-dependency-verification
-'''
-
 [tasks."gen:sui"]
 script = '''
 cd ui/

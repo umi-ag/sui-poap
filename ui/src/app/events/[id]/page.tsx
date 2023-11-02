@@ -1,11 +1,11 @@
 // ui/src/app/nft/page.tsx
 "use client";
 
-import ThreeScene from "./components/ThreeScene";
+import ThreeScene from "src/components/ThreeScene";
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useZkLoginSetup } from "src/store/zklogin";
-import style from "../styles/login.module.css";
+import style from "src/app/styles/login.module.css";
 import { shortenAddress } from "src/utils";
 import {
   EVENT_OBJECT_ID,

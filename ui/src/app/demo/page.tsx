@@ -77,7 +77,8 @@ export default function Home() {
     }
     if (objectid) {
       // router.push(`/events?objectid=${objectid}`);
-      router.push("/test");
+      // router.push("/test");
+      router.push(`/demo/${objectid}`);
     }
     if (zkAddress) {
       getObjectfromAddress(zkAddress);
@@ -94,7 +95,8 @@ export default function Home() {
   useEffect(() => {
     if (objectid) {
       // router.push(`/events?objectid=${objectid}`);
-      router.push("/test");
+      // router.push("/test");
+      router.push(`/demo/${objectid}`);
     }
   }, [objectid]);
 
@@ -145,7 +147,7 @@ export default function Home() {
         <p
           className={`${style.mySpecialFont} mt-5 text-center text-white text-3xl font-bold leading-9`}
         >
-          <span className="text-2xl">by</span> zkLogin & Sponsored Transaction,
+          <span className="text-2xl">by</span> zkLogin & Sponsored Transaction
           <br />
         </p>
         <p
