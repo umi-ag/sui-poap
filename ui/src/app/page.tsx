@@ -57,19 +57,20 @@ export default function Home() {
     ZKLOGIN_ADDRESS,
     null
   );
-  const [colors, setColors] = useLocalStorage(ZKLOGIN_COLOR, {
-    l1: 0xffd1dc,
-    l2: 0xaec6cf,
-    l3: 0xb39eb5,
-    r1: 0xbfd3c1,
-    r2: 0xfff5b2,
-    r3: 0xffb347,
-  });
   const { container: googleAnimationContainer } = useLottie(
     googleAnimationData,
     true
   );
   const zkLoginSetup = useZkLoginSetup();
+
+  const getObjectfromAddress = async (address: string) => {
+    if (address) {
+      const coco_id = await getOwnedCocoObjectId(address, cocoObjectType);
+      if (coco_id !== "") {
+        setObjectid(coco_id);
+      }
+    }
+  };
 
   useEffect(() => {
     if (account) {
@@ -78,47 +79,23 @@ export default function Home() {
     if (objectid) {
       router.push("/nft");
     }
-    const getObject = async () => {
-      if (zkAddress) {
-        const coco_id = await getOwnedCocoObjectId(zkAddress, cocoObjectType);
-        if (coco_id !== "") {
-          setObjectid(coco_id);
-          router.push("/nft");
-        }
-      }
-    };
-
-    getObject();
+    if (zkAddress) {
+      getObjectfromAddress(zkAddress);
+    }
   }, []);
 
   useEffect(() => {
-    const fetchData = async () => {
-      const coco_id = await getOwnedCocoObjectId(
-        zkLoginSetup.userAddr,
-        cocoObjectType
-      );
-      if (coco_id !== "") {
-        setObjectid(coco_id);
-        setZkAddress(zkLoginSetup.userAddr);
-        const parts = splitObjectId(coco_id);
-        console.log({ parts });
-        setColors({
-          l1: parseInt(parts[0], 16),
-          l2: parseInt(parts[1], 16),
-          l3: parseInt(parts[2], 16),
-          r1: parseInt(parts[3], 16),
-          r2: parseInt(parts[4], 16),
-          r3: parseInt(parts[5], 16),
-        });
-        router.push("/nft");
-      }
-    };
-    fetchData();
+    if (zkLoginSetup.userAddr) {
+      getObjectfromAddress(zkLoginSetup.userAddr);
+      setZkAddress(zkLoginSetup.userAddr);
+    }
   }, [zkLoginSetup.userAddr]);
 
   useEffect(() => {
-    localStorage.setItem("colors", JSON.stringify(colors));
-  }, [colors]);
+    if (objectid) {
+      router.push("/nft");
+    }
+  }, [objectid]);
 
   // https://docs.sui.io/build/zk_login#set-up-oauth-flow
   const beginZkLogin = async (provider: OpenIdProvider) => {
@@ -128,6 +105,7 @@ export default function Home() {
     console.log(zkLoginSetup.account());
     setAccount(zkLoginSetup.account());
     console.log(zkLoginSetup.userAddr);
+    setZkAddress(zkLoginSetup.userAddr);
     const loginUrl = zkLoginSetup.loginUrl();
     window.location.replace(loginUrl);
   };
@@ -148,43 +126,6 @@ export default function Home() {
     }
 
     return "Ready!";
-  };
-
-  const updateColors = (result: any) => {
-    const targetObjectType = `${PACKAGE_ID}::nft::CoCoNFT`;
-    const matchingObject = result.objectChanges?.find(
-      // @ts-ignore
-      (obj) => obj?.objectType === targetObjectType
-    );
-    if (!matchingObject || !matchingObject.objectType) {
-      setErr("Double Mint rejected...");
-      throw new Error("objectType not found");
-    }
-    setObjectid(matchingObject.objectId);
-    // @ts-ignore
-    const parts = splitObjectId(matchingObject.objectId);
-    console.log({ parts });
-    setColors({
-      l1: parseInt(parts[0], 16),
-      l2: parseInt(parts[1], 16),
-      l3: parseInt(parts[2], 16),
-      r1: parseInt(parts[3], 16),
-      r2: parseInt(parts[4], 16),
-      r3: parseInt(parts[5], 16),
-    });
-  };
-
-  const splitObjectId = (objectId: string) => {
-    const str = objectId.slice(2);
-    const length = str.length;
-    const partLength = Math.ceil(length / 6);
-    const parts = [];
-
-    for (let i = 0; i < 6; i++) {
-      parts.push(str.slice(i * partLength, (i + 1) * partLength));
-    }
-
-    return parts;
   };
 
   return (
@@ -283,8 +224,17 @@ export default function Home() {
             const result = await moveCallSponsored(txb, account);
             if (result.effects?.status.status === "success") {
               setDigest(result.digest);
-              updateColors(result);
-              router.push("/nft");
+              const matchingObject = result.objectChanges?.find(
+                // @ts-ignore
+                (obj) => obj?.objectType === cocoObjectType
+              );
+              // @ts-ignore
+              if (!matchingObject || !matchingObject.objectType) {
+                setErr("Double Mint rejected...");
+                throw new Error("objectType not found");
+              }
+              // @ts-ignore
+              setObjectid(matchingObject.objectId);
             } else {
               // setErr(`Transaction Failed: ${result.effects?.status.error}`);
               setErr("Transaction Failed...");

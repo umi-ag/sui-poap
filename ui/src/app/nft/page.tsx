@@ -8,13 +8,15 @@ import { useZkLoginSetup } from "src/store/zklogin";
 import style from "../styles/login.module.css";
 import { shortenAddress } from "src/utils";
 import { OBJECT_ID, ZKLOGIN_ADDRESS, ZKLOGIN_COLOR } from "src/config";
+import type { ColorsType } from "src/types";
+import { updateColors } from "src/utils/getColor";
 
 export default function Coin() {
   const router = useRouter();
   const zkLoginSetup = useZkLoginSetup();
-  const [colors, setColors] = useState(null);
   const [objectId, setObjectId] = useState(null);
   const [address, setAddress] = useState(null);
+  const [colors, setColors] = useState<ColorsType | null>(null);
 
   useEffect(() => {
     // @ts-ignore
@@ -25,12 +27,13 @@ export default function Coin() {
     console.log({ obj_id });
     if (!addr || !obj_id) {
       router.push("/");
+      return;
     }
     setAddress(addr);
-    // @ts-ignore
-    const localColors = JSON.parse(localStorage.getItem(ZKLOGIN_COLOR));
-    setColors(localColors);
     setObjectId(obj_id);
+    // @ts-ignore
+    // const localColors = JSON.parse(localStorage.getItem(ZKLOGIN_COLOR));
+    setColors(updateColors(obj_id));
   }, []);
 
   if (!colors) return null;

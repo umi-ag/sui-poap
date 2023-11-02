@@ -1,6 +1,7 @@
 import { rpcClient } from "typed-rpc";
 
 // const shinamiAccountKey = "sui_mainnet_a3d005b4000b794b178162d50c7e2965";
+const shinamiAccountKey = "sui_mainnet_e574df8c5c0d0ec4c5b170619a62ef49";
 const shinamiProviderUrl = `https://api.shinami.com/gas/v1/${shinamiAccountKey}`;
 
 const shinamiClient = rpcClient(shinamiProviderUrl);

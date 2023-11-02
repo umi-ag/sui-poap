@@ -70,49 +70,11 @@ export type AccountData = {
   maxEpoch: number;
 };
 
-type Eyecatch = {
-  url: string;
-  height: number;
-  width: number;
-};
-
-export type NewsItem = {
-  id: string;
-  createdAt: string;
-  updatedAt: string;
-  publishedAt: string;
-  revisedAt: string;
-  title: string;
-  content?: string;
-  eyecatch?: Eyecatch;
-  category: null;
-};
-
-export type NewsItemList = NewsItem[];
-
-export type VerifierInputs = {
-  vk: string;
-  public_inputs: string;
-  proof_points: string;
-};
-
-export type Protocol = "Sharbet" | "Haedal" | "Volo" | "Scallop" | "NAVI";
-
-export type Vault = {
-  protocol: Protocol;
-  syAssetType: string;
-  ptAssetType: string;
-  ytAssetType: string;
-  principalAssetType: string;
-  maturity: Date;
-  maturityCode: "01Y" | "02Y";
-  reserveSYAsset: bigint;
-  longYieldAPY: Decimal;
-  ytPrice: Decimal;
-  fixedAPY: Decimal;
-  ptPrice: Decimal;
-  underlyingAPY: Decimal;
-  underlyingAssetPrice: Decimal;
-  impliedAPY: Decimal;
-  status: "upcoming" | "live" | "matured";
+export type ColorsType = {
+  l1: number;
+  l2: number;
+  l3: number;
+  r1: number;
+  r2: number;
+  r3: number;
 };
