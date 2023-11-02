@@ -1,4 +1,3 @@
-// ui/src/app/nft/page.tsx
 "use client";
 
 import ThreeScene from "./components/ThreeScene";
@@ -30,7 +29,7 @@ export default function Coin() {
     const obj_id = JSON.parse(localStorage.getItem(EVENT_OBJECT_ID));
     console.log({ obj_id });
     if (!addr || !obj_id) {
-      // router.push("/");
+      router.push("/");
       return;
     }
     setAddress(addr);

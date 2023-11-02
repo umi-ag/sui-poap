@@ -1,17 +1,13 @@
 // ui/src/app/nft/page.tsx
 "use client";
 
-import ThreeScene from "./components/ThreeScene";
+import ThreeScene from "../nft/components/ThreeScene";
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useZkLoginSetup } from "src/store/zklogin";
 import style from "../styles/login.module.css";
 import { shortenAddress } from "src/utils";
-import {
-  EVENT_OBJECT_ID,
-  EVENT_ZKLOGIN_ADDRESS,
-  EVENT_ZKLOGIN_COLOR,
-} from "src/config";
+import { DEMO_OBJECT_ID, DEMO_ZKLOGIN_ADDRESS } from "src/config";
 import type { ColorsType } from "src/types";
 import { updateColors } from "src/utils/getColor";
 
@@ -24,10 +20,10 @@ export default function Coin() {
 
   useEffect(() => {
     // @ts-ignore
-    const addr = JSON.parse(localStorage.getItem(EVENT_ZKLOGIN_ADDRESS));
+    const addr = JSON.parse(localStorage.getItem(DEMO_ZKLOGIN_ADDRESS));
     console.log({ addr });
     // @ts-ignore
-    const obj_id = JSON.parse(localStorage.getItem(EVENT_OBJECT_ID));
+    const obj_id = JSON.parse(localStorage.getItem(DEMO_OBJECT_ID));
     console.log({ obj_id });
     if (!addr || !obj_id) {
       // router.push("/");

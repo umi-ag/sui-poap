@@ -8,15 +8,20 @@ import { suiClient } from "src/config/sui";
 
 export const moveCallSponsored = async (
   txb: TransactionBlock,
-  account: Account
+  account: Account,
+  isEvent: boolean
 ) => {
   txb.setSender(account.userAddr);
-  moveCallMintNft(txb, {
-    name: "Sui Meetup POAP",
-    description: "Sui Japan Community Event Attendance NFT",
-    url: "ipfs://bafybeiez4cq7ixp6h2fgzlzl2223t4pdydl6udxefxy4lxairivszceptm",
-    date: "2023/10/30",
-  });
+  moveCallMintNft(
+    txb,
+    {
+      name: "Sui Meetup POAP",
+      description: "Sui Japan Community Event Attendance NFT",
+      url: "ipfs://bafybeiez4cq7ixp6h2fgzlzl2223t4pdydl6udxefxy4lxairivszceptm",
+      date: "2023/10/30",
+    },
+    isEvent
+  );
   const payloadBytes = await txb.build({
     client: suiClient,
     onlyTransactionKind: true,

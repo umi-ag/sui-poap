@@ -19,7 +19,8 @@ export const useZkLoginSetup = create<
     beginZkLogin: (provider: OpenIdProvider) => void;
     completeZkLogin: (account: Account) => void;
     nonce: string;
-    loginUrl: () => string;
+    eventLoginUrl: () => string;
+    demoLoginUrl: () => string;
     userAddr: string;
     jwt: string;
     aud: string;
@@ -37,8 +38,14 @@ export const useZkLoginSetup = create<
   maxEpoch: 0,
   randomness: "",
   nonce: "",
-  loginUrl: () => {
-    return getLoginUrl({
+  eventLoginUrl: () => {
+    return getEventLoginUrl({
+      nonce: get().nonce,
+      provider: get().provider,
+    });
+  },
+  demoLoginUrl: () => {
+    return getDemoLoginUrl({
       nonce: get().nonce,
       provider: get().provider,
     });
@@ -142,8 +149,58 @@ export const useZkLoginSetup = create<
   }),
 }));
 
-const getLoginUrl = (props: { provider: OpenIdProvider; nonce: string }) => {
-  const REDIRECT_URI = window.location.origin;
+const getEventLoginUrl = (props: {
+  provider: OpenIdProvider;
+  nonce: string;
+}) => {
+  const REDIRECT_URI = window.location.origin + "/events";
+  const urlParamsBase = {
+    nonce: props.nonce,
+    state: new URLSearchParams({
+      // redirect_uri: REDIRECT_URI,
+      redirect_uri: `${REDIRECT_URI}`,
+    }).toString(),
+    //   redirect_uri: window.location.origin + "/login",
+    redirect_uri: "https://zklogin-dev-redirect.vercel.app/api/auth",
+    response_type: "id_token",
+    scope: "openid",
+  };
+
+  const loginUrl = match(props.provider)
+    .with("Google", () => {
+      const urlParams = new URLSearchParams({
+        ...urlParamsBase,
+        client_id: config.CLIENT_ID_GOOGLE,
+      });
+      return `https://accounts.google.com/o/oauth2/v2/auth?${urlParams}`;
+    })
+    .with("Twitch", () => {
+      const urlParams = new URLSearchParams({
+        ...urlParamsBase,
+        client_id: config.CLIENT_ID_TWITCH,
+        force_verify: "true",
+        lang: "en",
+        login_type: "login",
+      });
+      return `https://id.twitch.tv/oauth2/authorize?${urlParams}`;
+    })
+    .with("Facebook", () => {
+      const urlParams = new URLSearchParams({
+        ...urlParamsBase,
+        client_id: config.CLIENT_ID_FACEBOOK,
+      });
+      return `https://www.facebook.com/v18.0/dialog/oauth?${urlParams}`;
+    })
+    .exhaustive();
+
+  return loginUrl;
+};
+
+const getDemoLoginUrl = (props: {
+  provider: OpenIdProvider;
+  nonce: string;
+}) => {
+  const REDIRECT_URI = window.location.origin + "/demo";
   const urlParamsBase = {
     nonce: props.nonce,
     state: new URLSearchParams({

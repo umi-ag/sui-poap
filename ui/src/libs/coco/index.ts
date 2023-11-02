@@ -3,7 +3,13 @@ import {
   TransactionBlock,
   TransactionArgument,
 } from "@mysten/sui.js/transactions";
-import { PACKAGE_ID, VISITOR_LIST_ID, CLOCK_ID } from "src/config";
+import {
+  EVENT_PACKAGE_ID,
+  EVENT_VISITOR_LIST_ID,
+  CLOCK_ID,
+  DEMO_PACKAGE_ID,
+  DEMO_VISITOR_LIST_ID,
+} from "src/config";
 
 export interface FirstMintArgs {
   // list: string | TransactionArgument;
@@ -13,11 +19,19 @@ export interface FirstMintArgs {
   date: string | TransactionArgument;
 }
 
-export function firstMint(txb: TransactionBlock, args: FirstMintArgs) {
+export function firstMint(
+  txb: TransactionBlock,
+  args: FirstMintArgs,
+  isEvent: boolean
+) {
   return txb.moveCall({
-    target: `${PACKAGE_ID}::issuer::mint`,
+    target: isEvent
+      ? `${EVENT_PACKAGE_ID}::nft::first_mint`
+      : `${DEMO_PACKAGE_ID}::issuer::mint`,
     arguments: [
-      txb.pure(VISITOR_LIST_ID),
+      isEvent
+        ? txb.pure(EVENT_VISITOR_LIST_ID)
+        : txb.pure(DEMO_VISITOR_LIST_ID),
       txb.pure(CLOCK_ID),
       txb.pure(args.name),
       txb.pure(args.description),
@@ -34,12 +48,17 @@ export const moveCallMintNft = (
     description: string;
     url: string;
     date: string;
-  }
+  },
+  isEvent: boolean
 ) => {
-  firstMint(txb, {
-    name: props.name,
-    description: props.description,
-    url: props.url,
-    date: props.date,
-  });
+  firstMint(
+    txb,
+    {
+      name: props.name,
+      description: props.description,
+      url: props.url,
+      date: props.date,
+    },
+    isEvent
+  );
 };
