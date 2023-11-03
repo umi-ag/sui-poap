@@ -77,7 +77,8 @@ export default function Home() {
       zkLoginSetup.completeZkLogin(account);
     }
     if (objectid) {
-      router.push("/nft");
+      // router.push("/nft");
+      router.push(`/${objectid}`);
     }
     if (zkAddress) {
       getObjectfromAddress(zkAddress);
@@ -93,7 +94,8 @@ export default function Home() {
 
   useEffect(() => {
     if (objectid) {
-      router.push("/nft");
+      // router.push("/nft");
+      router.push(`/${objectid}`);
     }
   }, [objectid]);
 
