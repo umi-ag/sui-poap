@@ -1,7 +1,0 @@
-[config]
-# will be set to mainnet by default if omitted
-rpc = "https://fullnode.mainnet.sui.io:443"
-
-[packages]
-Coco = {id = '0x26d4185cbe7c41df3e1ea83bea4a5b33643717c651b69e325eeae85ca423ea72'}
-Sui = {git = "https://github.com/MystenLabs/sui.git", subdir = "crates/sui-framework/packages/sui-framework", rev = "mainnet-v1.12.2"}
