@@ -4,20 +4,14 @@
 import { useLocalStorage } from "usehooks-ts";
 import { useRouter } from "next/navigation";
 import { useLottie } from "src/utils/useLottie";
-import { MouseEventHandler, ReactNode, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { TransactionBlock } from "@mysten/sui.js/transactions";
-// import { ConnectButton, useWalletKit } from "@mysten/wallet-kit";
 import style from "./styles/login.module.css";
-import { moveCallMintNft, sponsorTransactionE2E } from "src/libs/coco";
-import { GAS_BUDGET, sponsor, suiClient } from "src/config/sui";
 import { Account, OpenIdProvider } from "src/types";
-import { CoCoNFT } from "src/libs/moveCall/coco/my-nft/structs";
 import { useZkLoginSetup } from "src/store/zklogin";
 import { moveCallSponsored } from "src/libs/coco/sponsoredZkLogin";
 import { shortenAddress } from "src/utils";
-import { NETWORK } from "src/config/sui";
 import { PACKAGE_ID, cocoObjectType } from "src/config";
-import loginAnimationData from "src/components/interface/animations/login.json";
 import googleAnimationData from "src/components/interface/animations/google.json";
 import {
   ZKLOGIN_ACCONTS,
@@ -26,6 +20,24 @@ import {
   ZKLOGIN_COLOR,
 } from "src/config";
 import { getOwnedCocoObjectId } from "src/utils/getObject";
+
+const styles = {
+  compose: {
+    background: "url('/login/background.png') center / cover no-repeat",
+    width: "100vw",
+    height: "100vh",
+    boxSizing: "border-box",
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "space-between",
+  },
+  contentTop: {
+    paddingTop: "10vh",
+  },
+  contentBottom: {
+    paddingBottom: "10vh",
+  },
+};
 
 export default function Home() {
   const router = useRouter();
@@ -45,91 +57,45 @@ export default function Home() {
     ZKLOGIN_ADDRESS,
     null
   );
-  const [colors, setColors] = useLocalStorage(ZKLOGIN_COLOR, {
-    l1: 0xffd1dc,
-    l2: 0xaec6cf,
-    l3: 0xb39eb5,
-    r1: 0xbfd3c1,
-    r2: 0xfff5b2,
-    r3: 0xffb347,
-  });
-  const [generated, setGenerated] = useState(false);
-  const { container } = useLottie(loginAnimationData, true);
   const { container: googleAnimationContainer } = useLottie(
     googleAnimationData,
     true
   );
   const zkLoginSetup = useZkLoginSetup();
 
-  useEffect(() => {
-    const fetchData = async () => {
-      if (account) {
-        console.log({ account });
-        zkLoginSetup.completeZkLogin(account);
-        // setZkAddress(zkLoginSetup.userAddr);
+  const getObjectfromAddress = async (address: string) => {
+    if (address) {
+      const coco_id = await getOwnedCocoObjectId(address, cocoObjectType);
+      if (coco_id !== "") {
+        setObjectid(coco_id);
       }
-      if (objectid) {
-        router.push("/nft");
-      }
-      if (zkAddress) {
-        console.log("get object");
-        const coco_id = await getOwnedCocoObjectId(zkAddress, cocoObjectType);
-        if (coco_id !== "") {
-          setObjectid(coco_id);
-          router.push("/nft");
-        }
-      }
-    };
+    }
+  };
 
-    fetchData();
+  useEffect(() => {
+    if (account) {
+      zkLoginSetup.completeZkLogin(account);
+    }
+    if (objectid) {
+      router.push("/nft");
+    }
+    if (zkAddress) {
+      getObjectfromAddress(zkAddress);
+    }
   }, []);
 
   useEffect(() => {
-    const fetchData = async () => {
-      const coco_id = await getOwnedCocoObjectId(
-        zkLoginSetup.userAddr,
-        cocoObjectType
-      );
-      if (coco_id !== "") {
-        setObjectid(coco_id);
-        setZkAddress(zkLoginSetup.userAddr);
-        const parts = splitObjectId(coco_id);
-        console.log({ parts });
-        setColors({
-          l1: parseInt(parts[0], 16),
-          l2: parseInt(parts[1], 16),
-          l3: parseInt(parts[2], 16),
-          r1: parseInt(parts[3], 16),
-          r2: parseInt(parts[4], 16),
-          r3: parseInt(parts[5], 16),
-        });
-        router.push("/nft");
-      }
-    };
-    fetchData();
+    if (zkLoginSetup.userAddr) {
+      getObjectfromAddress(zkLoginSetup.userAddr);
+      setZkAddress(zkLoginSetup.userAddr);
+    }
   }, [zkLoginSetup.userAddr]);
 
   useEffect(() => {
-    localStorage.setItem("colors", JSON.stringify(colors));
-  }, [colors]);
-
-  const styles = {
-    compose: {
-      background: "url('/login/background.png') center / cover no-repeat",
-      width: "100vw",
-      height: "100vh",
-      boxSizing: "border-box",
-      display: "flex",
-      flexDirection: "column",
-      justifyContent: "space-between",
-    },
-    contentTop: {
-      paddingTop: "10vh",
-    },
-    contentBottom: {
-      paddingBottom: "10vh",
-    },
-  };
+    if (objectid) {
+      router.push("/nft");
+    }
+  }, [objectid]);
 
   // https://docs.sui.io/build/zk_login#set-up-oauth-flow
   const beginZkLogin = async (provider: OpenIdProvider) => {
@@ -139,7 +105,7 @@ export default function Home() {
     console.log(zkLoginSetup.account());
     setAccount(zkLoginSetup.account());
     console.log(zkLoginSetup.userAddr);
-    // setZkAddress(zkLoginSetup.userAddr);
+    setZkAddress(zkLoginSetup.userAddr);
     const loginUrl = zkLoginSetup.loginUrl();
     window.location.replace(loginUrl);
   };
@@ -156,47 +122,10 @@ export default function Home() {
     }
 
     if (!zkLoginSetup.zkProofs && zkLoginSetup.isProofsLoading) {
-      return "ZK証明を生成中...";
+      return "Loading zk proofs...";
     }
 
-    return "完了!";
-  };
-
-  const updateColors = (result: any) => {
-    const targetObjectType = `${PACKAGE_ID}::nft::CoCoNFT`;
-    const matchingObject = result.objectChanges?.find(
-      // @ts-ignore
-      (obj) => obj?.objectType === targetObjectType
-    );
-    if (!matchingObject || !matchingObject.objectType) {
-      setErr("Double Mint rejected...");
-      throw new Error("objectType not found");
-    }
-    setObjectid(matchingObject.objectId);
-    // @ts-ignore
-    const parts = splitObjectId(matchingObject.objectId);
-    console.log({ parts });
-    setColors({
-      l1: parseInt(parts[0], 16),
-      l2: parseInt(parts[1], 16),
-      l3: parseInt(parts[2], 16),
-      r1: parseInt(parts[3], 16),
-      r2: parseInt(parts[4], 16),
-      r3: parseInt(parts[5], 16),
-    });
-  };
-
-  const splitObjectId = (objectId: string) => {
-    const str = objectId.slice(2);
-    const length = str.length;
-    const partLength = Math.ceil(length / 6);
-    const parts = [];
-
-    for (let i = 0; i < 6; i++) {
-      parts.push(str.slice(i * partLength, (i + 1) * partLength));
-    }
-
-    return parts;
+    return "Ready!";
   };
 
   return (
@@ -219,9 +148,14 @@ export default function Home() {
           <br />
         </p>
         <p
-          className={`${style.mySpecialFont} mt-3 text-center text-white text-3xl font-bold leading-9`}
+          className={`${style.mySpecialFont} flex items-center justify-center mt-3 text-center text-white text-3xl font-bold leading-9 gap-2`}
         >
           <span className="text-2xl">presented by</span> Umi Labs
+          <img
+            src="/logo.png"
+            alt="Umi Labs Logo"
+            style={{ height: "1.25em" }}
+          />
         </p>
       </div>
       <div id="login-buttons" className="section mb-8">
@@ -230,7 +164,6 @@ export default function Home() {
             className={`btn-login text-white font-bold py-1 px-10 rounded border-[2px] border-gray-300 ${provider}`}
             onClick={() => {
               beginZkLogin(provider);
-              // setGenerated(true);
             }}
             key={provider}
           >
@@ -291,8 +224,17 @@ export default function Home() {
             const result = await moveCallSponsored(txb, account);
             if (result.effects?.status.status === "success") {
               setDigest(result.digest);
-              updateColors(result);
-              router.push("/nft");
+              const matchingObject = result.objectChanges?.find(
+                // @ts-ignore
+                (obj) => obj?.objectType === cocoObjectType
+              );
+              // @ts-ignore
+              if (!matchingObject || !matchingObject.objectType) {
+                setErr("Double Mint rejected...");
+                throw new Error("objectType not found");
+              }
+              // @ts-ignore
+              setObjectid(matchingObject.objectId);
             } else {
               // setErr(`Transaction Failed: ${result.effects?.status.error}`);
               setErr("Transaction Failed...");

@@ -1,4 +1,4 @@
-// frontend/src/app/coin/page.tsx
+// ui/src/app/nft/page.tsx
 "use client";
 
 import ThreeScene from "./components/ThreeScene";
@@ -7,19 +7,16 @@ import { useRouter } from "next/navigation";
 import { useZkLoginSetup } from "src/store/zklogin";
 import style from "../styles/login.module.css";
 import { shortenAddress } from "src/utils";
-import {
-  ZKLOGIN_ACCONTS,
-  OBJECT_ID,
-  ZKLOGIN_ADDRESS,
-  ZKLOGIN_COLOR,
-} from "src/config";
+import { OBJECT_ID, ZKLOGIN_ADDRESS, ZKLOGIN_COLOR } from "src/config";
+import type { ColorsType } from "src/types";
+import { updateColors } from "src/utils/getColor";
 
 export default function Coin() {
   const router = useRouter();
   const zkLoginSetup = useZkLoginSetup();
-  const [colors, setColors] = useState(null);
   const [objectId, setObjectId] = useState(null);
   const [address, setAddress] = useState(null);
+  const [colors, setColors] = useState<ColorsType | null>(null);
 
   useEffect(() => {
     // @ts-ignore
@@ -30,12 +27,13 @@ export default function Coin() {
     console.log({ obj_id });
     if (!addr || !obj_id) {
       router.push("/");
+      return;
     }
     setAddress(addr);
-    // @ts-ignore
-    const localColors = JSON.parse(localStorage.getItem(ZKLOGIN_COLOR));
-    setColors(localColors);
     setObjectId(obj_id);
+    // @ts-ignore
+    // const localColors = JSON.parse(localStorage.getItem(ZKLOGIN_COLOR));
+    setColors(updateColors(obj_id));
   }, []);
 
   if (!colors) return null;
@@ -67,12 +65,15 @@ export default function Coin() {
   return (
     <div className="">
       <div style={{ position: "absolute", color: "white", width: "100vw" }}>
-        <div>
-          <p
-            className={`${style.mySpecialFont} mt-10 text-center text-white text-3xl font-bold leading-9`}
-          >
-            Thank you for coming!
-          </p>
+        <div className="flex flex-col mt-1">
+          <div className="flex justify-center">
+            <p
+              className={`${style.mySpecialFont} mt-5 text-center text-white text-2xl font-bold leading-9`}
+            >
+              Sui POAP <span className="text-2xl">by</span> zkLogin & Sponsored
+              Transaction
+            </p>
+          </div>
         </div>
         <div className="flex flex-col">
           <div className="flex justify-center">
@@ -148,6 +149,27 @@ export default function Coin() {
       </div>
       <div className="mt-30">
         <ThreeScene props={props} />
+      </div>
+      <div
+        style={{
+          position: "absolute",
+          bottom: "10px",
+          right: "10px",
+          color: "white",
+        }}
+      >
+        <p
+          className={`${style.mySpecialFont} mt-5 ml-2 text-center text-white text-2xl font-bold leading-9`}
+        >
+          <div className="flex items-center mt-5 ml-2 text-center text-white text-2xl font-bold leading-9 gap-2">
+            <span className="text-xl">presented by</span> Umi Labs
+            <img
+              src="/logo.png"
+              alt="Umi Labs Logo"
+              style={{ height: "1.25em" }}
+            />
+          </div>
+        </p>
       </div>
     </div>
   );

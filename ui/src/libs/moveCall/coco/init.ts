@@ -1,9 +1,8 @@
-import * as item from "./item/structs";
-import * as myNft from "./my-nft/structs";
+import * as issuer from "./issuer/structs";
+import * as nft from "./nft/structs";
 import {StructClassLoader} from "../_framework/loader";
 
-export function registerClasses(loader: StructClassLoader) { loader.register(item.CoCoItem);
-loader.register(item.ITEM);
-loader.register(myNft.CoCoNFT);
-loader.register(myNft.MY_NFT);
+export function registerClasses(loader: StructClassLoader) { loader.register(nft.CoCoNFT);
+loader.register(nft.NFT);
+loader.register(issuer.VisitorList);
  }

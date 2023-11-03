@@ -1,7 +1,6 @@
 import { getFullnodeUrl, SuiClient } from "@mysten/sui.js/client";
 import { rpcClient } from "typed-rpc";
 import type { SponsorRpc } from "src/types";
-import { buildGaslessTransactionBytes, createSuiClient } from "shinami";
 
 // gas budget for our transactions, in MIST
 // export const GAS_BUDGET = 5000000;
@@ -16,30 +15,14 @@ export const SENDER_ADDRESS =
 const SPONSOR_RPC_URL = `https://api.shinami.com/gas/v1/${process.env.NEXT_PUBLIC_GAS_ACCESS_KEY}`;
 console.log({ SPONSOR_RPC_URL });
 
-// // Shinami Sui Node endpointu
-// const connection = new Connection({
-//   fullnode: `https://api.shinami.com/node/v1/${process.env.NEXT_PUBLIC_NODE_ACCESS_KEY}`,
-// });
-
-// export const suiProvider = new JsonRpcProvider(connection);
-
 const proxy = (url: string) => "https://cors-proxy.fringe.zone/" + url;
 
 const SPONSOR_RPC_URL_PROXY = proxy(SPONSOR_RPC_URL);
 
 export const sponsor = rpcClient<SponsorRpc>(SPONSOR_RPC_URL_PROXY);
-// export const sponsor = createSuiClient(
-//   process.env.NEXT_PUBLIC_GAS_ACCESS_KEY!
-// );
 
 export const NETWORK = "mainnet";
 
 export const suiClient = new SuiClient({
   url: getFullnodeUrl(NETWORK),
 });
-
-// export const suiClient = () => {
-//   return new SuiClient({
-//     url: "https://fullnode.testnet.sui.io:443",
-//   });
-// };
