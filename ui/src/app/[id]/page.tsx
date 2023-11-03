@@ -1,5 +1,7 @@
-// ui/src/app/nft/page.tsx
+// ui/src/app/[id]/page.tsx
 "use client";
+
+export const config = { runtime: "edge" };
 
 import ThreeScene from "src/components/ThreeScene";
 import React, { useEffect, useState } from "react";
