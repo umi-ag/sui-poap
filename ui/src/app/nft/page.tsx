@@ -5,7 +5,7 @@ import ThreeScene from "src/components/ThreeScene";
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useZkLoginSetup } from "src/store/zklogin";
-import style from "../styles/login.module.css";
+import style from "src/app/styles/login.module.css";
 import { shortenAddress } from "src/utils";
 import { OBJECT_ID, ZKLOGIN_ADDRESS, ZKLOGIN_COLOR } from "src/config";
 import type { ColorsType } from "src/types";

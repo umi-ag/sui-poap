@@ -6,7 +6,8 @@ import { useRouter } from "next/navigation";
 import { useLottie } from "src/utils/useLottie";
 import { useEffect, useState } from "react";
 import { TransactionBlock } from "@mysten/sui.js/transactions";
-import style from "./styles/login.module.css";
+import style from "src/app//styles/login.module.css";
+import { styles } from "src/app/styles";
 import { Account, OpenIdProvider } from "src/types";
 import { useZkLoginSetup } from "src/store/zklogin";
 import { moveCallSponsored } from "src/libs/coco/sponsoredZkLogin";
@@ -20,24 +21,6 @@ import {
   ZKLOGIN_COLOR,
 } from "src/config";
 import { getOwnedCocoObjectId } from "src/utils/getObject";
-
-const styles = {
-  compose: {
-    background: "url('/login/background.png') center / cover no-repeat",
-    width: "100vw",
-    height: "100vh",
-    boxSizing: "border-box",
-    display: "flex",
-    flexDirection: "column",
-    justifyContent: "space-between",
-  },
-  contentTop: {
-    paddingTop: "10vh",
-  },
-  contentBottom: {
-    paddingBottom: "10vh",
-  },
-};
 
 export default function Home() {
   const router = useRouter();
