@@ -40,20 +40,16 @@ module coco::nft {
     /// One-Time-Witness for the module.
     struct NFT has drop {}
 
-    // fun date_key(): String {
-    //     string::utf8(b"date")
-    // }
-
     fun count_key(): String {
         string::utf8(b"count")
     }
 
-    fun liked_key(): String {
-        string::utf8(b"liked")
-    }
-
     fun date_key(): String {
         string::utf8(b"date_list")
+    }
+
+    fun sender_key(): String {
+        string::utf8(b"sender_address")
     }
 
     fun item_key(): String {
@@ -142,6 +138,7 @@ module coco::nft {
         };
         df::add(&mut nft.id, count_key(), 1);
         df::add(&mut nft.id, date_key(), vec_set::empty<String>());
+        df::add(&mut nft.id, sender_key(), tx_context::sender(ctx));
         nft
     }
 
@@ -158,7 +155,6 @@ module coco::nft {
 
         let date_set: &mut VecSet<String> = df::borrow_mut(&mut nft.id, date_key());
         vec_set::insert(date_set, date);
-        // vec_set::insert(&mut nft.date, date);
 
         transfer::public_transfer(nft, tx_context::sender(ctx));
     }
@@ -174,28 +170,10 @@ module coco::nft {
     ) {
         let count: &mut u64 = df::borrow_mut(&mut nft.id, count_key());
         *count = *count + 1;
-        // vec_set::insert(date_set, date);
-        // nft.count = nft.count + 1;
         let date_set: &mut VecSet<String> = df::borrow_mut(&mut nft.id, date_key());
         vec_set::insert(date_set, date);
-        // vec_set::insert(&mut nft.date, date);
         let item = item::new_item(item_name, item_description, item_url, date, ctx);
         dof::add(&mut nft.id, item_key(), item);
     }
 
-    // public entry fun compose_item(
-    //     origin: &mut CoCoNFT,
-    //     item_name: String,
-    //     item_description: String,
-    //     item_url: String,
-    //     date: String,
-    //     ctx: &mut TxContext,
-    // ) {
-    //     origin.count = origin.count + 1;
-    //     // let item_pool = dof::borrow_mut(&mut origin.id, item_key());
-    //     let item = item::new_item(item_name, item_description, item_url, date, ctx);
-    //     // let new_item_id = object::id(&item);
-    //     // dof::add(&mut item_pool.id, new_item_id, item);
-    //     dof::add(&mut origin.id, item_key(), item);
-    // }
 }

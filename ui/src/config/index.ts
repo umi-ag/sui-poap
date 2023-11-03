@@ -3,10 +3,10 @@ export const isProduction = () => {
 };
 
 export const PACKAGE_ID =
-  "0x14dbb0365ad440759d5754894f3de15d082187bcd25fa01812ae2cbdf41b1ab6";
+  "0x6d2c1faa1b504cccad8c25d64aa7f288d6e3909a6ee79b6a78d69c4884ee913d";
 
 export const VISITOR_LIST_ID =
-  "0xbd1d18c3fd6e9b0a02e96501a664f17d6e7bc33badb1306fe20d7f797f1766a5";
+  "0xd8ef456b25f027a6c38025f2045cfcfa3dbe2c95f239d8255e4e998d6e4855b4";
 
 export const CLOCK_ID = "0x6";
 
