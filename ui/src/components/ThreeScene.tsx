@@ -1,8 +1,11 @@
 "use client";
 
 import { useEffect } from "react";
+// @ts-ignore
 import * as THREE from "three";
+// @ts-ignore
 import { FontLoader } from "three/examples/jsm/loaders/FontLoader.js";
+// @ts-ignore
 import { TextGeometry } from "three/examples/jsm/geometries/TextGeometry.js";
 
 const frontImg = "/coin/front.png";
@@ -12,6 +15,7 @@ const mainImg = "/coin/main.png";
 const fontjson = "/coin/IPAexMincho_Regular.json";
 const starFrontImg = "/star/starfront.png";
 
+// @ts-ignore
 const ThreeScene = ({ props }) => {
   useEffect(() => {
     const scene = new THREE.Scene();
@@ -26,6 +30,7 @@ const ThreeScene = ({ props }) => {
     camera.position.z = 1.5;
     const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
+    // @ts-ignore
     document.getElementById("three-container").appendChild(renderer.domElement);
 
     const coinGroup = new THREE.Group();
@@ -125,6 +130,7 @@ const ThreeScene = ({ props }) => {
     backmesh.rotation.y = Math.PI;
 
     const numLoader = new FontLoader();
+    // @ts-ignore
     numLoader.load(fontjson, function (font) {
       const numGeometry = new TextGeometry(props.num, {
         font: font,
@@ -139,6 +145,7 @@ const ThreeScene = ({ props }) => {
     });
 
     const dateLoader = new FontLoader();
+    // @ts-ignore
     dateLoader.load(fontjson, function (font) {
       const dateGeometry = new TextGeometry(props.date, {
         font: font,

@@ -1,7 +1,7 @@
 // ui/src/app/nft/page.tsx
 "use client";
 
-import ThreeScene from "./components/ThreeScene";
+import ThreeScene from "src/components/ThreeScene";
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useZkLoginSetup } from "src/store/zklogin";
