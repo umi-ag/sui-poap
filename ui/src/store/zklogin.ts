@@ -1,6 +1,13 @@
 import { suiClient } from "src/config/sui";
-import { Account, OpenIdProvider, SetupData, ZKProof } from "src/types";
+import {
+  Account,
+  OpenIdProvider,
+  SetupData,
+  ZKProof,
+  zkLoginState,
+} from "src/types";
 import { create } from "zustand";
+import { persist } from "zustand/middleware";
 import config from "src/config/config.json";
 
 import {
@@ -13,134 +20,182 @@ import { match } from "ts-pattern";
 import { toBigIntBE } from "bigint-buffer";
 import { decodeJwt } from "jose";
 
+// <
+//   SetupData & {
+//     beginZkLogin: (provider: OpenIdProvider) => void;
+//     completeZkLogin: (account: Account) => void;
+//     nonce: string;
+//     loginUrl: () => string;
+//     userAddr: string;
+//     jwt: string;
+//     aud: string;
+//     sub: string;
+//     salt: () => string;
+//     getJwt: () => void;
+//     zkProofs: ZKProof | null;
+//     account: () => Account;
+//     isProofsLoading: boolean;
+//   }
+// >
+
 const MAX_EPOCH = 1; // keep ephemeral keys active for this many Sui epochs from now (1 epoch ~= 24h)
-export const useZkLoginSetup = create<
-  SetupData & {
-    beginZkLogin: (provider: OpenIdProvider) => void;
-    completeZkLogin: (account: Account) => void;
-    nonce: string;
-    loginUrl: () => string;
-    userAddr: string;
-    jwt: string;
-    aud: string;
-    sub: string;
-    salt: () => string;
-    getJwt: () => void;
-    zkProofs: ZKProof | null;
-    account: () => Account;
-    isProofsLoading: boolean;
-  }
->((set, get) => ({
-  provider: "Google",
-  ephemeralPrivateKey: "",
-  ephemeralPublicKey: "",
-  maxEpoch: 0,
-  randomness: "",
-  nonce: "",
-  loginUrl: () => {
-    return getLoginUrl({
-      nonce: get().nonce,
-      provider: get().provider,
-    });
-  },
-  userAddr: "",
-  jwt: "",
-  sub: "",
-  aud: "",
-  zkProofs: null,
-  salt: () => "",
-  isProofsLoading: false,
-  beginZkLogin: async (provider: OpenIdProvider) => {
-    const { epoch } = await suiClient.getLatestSuiSystemState();
-    const maxEpoch = Number(epoch) + MAX_EPOCH; // the ephemeral key will be valid for MAX_EPOCH from now
-    const ephemeralKeyPair = new Ed25519Keypair();
-    const randomness = generateRandomness();
 
-    set({
-      provider,
-      maxEpoch,
-      ephemeralPublicKey: toBigIntBE(
-        Buffer.from(ephemeralKeyPair.getPublicKey().toSuiBytes())
-      ).toString(),
-      ephemeralPrivateKey: ephemeralKeyPair.export().privateKey,
-      randomness,
-    });
-
-    const nonce = generateNonce(
+export const useZkLoginSetup = create(
+  persist(
+    (set, get) => ({
+      provider: "Google",
+      ephemeralPrivateKey: "",
+      ephemeralPublicKey: "",
+      maxEpoch: 0,
+      randomness: "",
+      nonce: "",
+      loginUrl: () => {
+        return getLoginUrl({
+          // @ts-ignore
+          nonce: get().nonce,
+          // @ts-ignore
+          provider: get().provider,
+        });
+      },
+      userAddr: "",
+      jwt: "",
+      sub: "",
+      aud: "",
+      zkProofs: null,
+      salt: () => "",
+      isProofsLoading: false,
       // @ts-ignore
-      ephemeralKeyPair.getPublicKey(),
-      maxEpoch,
-      randomness
-    );
+      beginZkLogin: async (provider) => {
+        const { epoch } = await suiClient.getLatestSuiSystemState();
+        const maxEpoch = Number(epoch) + MAX_EPOCH; // the ephemeral key will be valid for MAX_EPOCH from now
+        const ephemeralKeyPair = new Ed25519Keypair();
+        const randomness = generateRandomness();
 
-    set({ randomness, nonce });
-  },
-  completeZkLogin: async (account: Account) => {
-    set({
-      provider: account.provider as OpenIdProvider,
-      maxEpoch: account.maxEpoch,
-      ephemeralPublicKey: account.ephemeralPublicKey,
-      ephemeralPrivateKey: account.ephemeralPrivateKey,
-      randomness: account.randomeness,
-    });
+        set({
+          provider,
+          maxEpoch,
+          ephemeralPublicKey: toBigIntBE(
+            Buffer.from(ephemeralKeyPair.getPublicKey().toSuiBytes())
+          ).toString(),
+          ephemeralPrivateKey: ephemeralKeyPair.export().privateKey,
+          randomness,
+        });
 
-    if (!get().jwt) {
-      get().getJwt();
-      const userAddr = jwtToAddress(get().jwt, get().salt());
-      set({ userAddr });
-    }
+        const nonce = generateNonce(
+          // @ts-ignore
+          ephemeralKeyPair.getPublicKey(),
+          maxEpoch,
+          randomness
+        );
+        set({ randomness, nonce });
+      },
+      // @ts-ignore
+      completeZkLogin: async (account) => {
+        set({
+          provider: account.provider,
+          maxEpoch: account.maxEpoch,
+          ephemeralPublicKey: account.ephemeralPublicKey,
+          ephemeralPrivateKey: account.ephemeralPrivateKey,
+          randomness: account.randomeness,
+        });
 
-    if (!account.zkProofs) {
-      set({ isProofsLoading: true });
-      const zkproofs = await getZkProof({
-        maxEpoch: get().maxEpoch,
-        jwtRandomness: get().randomness,
-        extendedEphemeralPublicKey: get().ephemeralPublicKey,
+        // @ts-ignore
+        if (!get().jwt) {
+          // @ts-ignore
+          get().getJwt();
+          // @ts-ignore
+          const userAddr = jwtToAddress(get().jwt, get().salt());
+          set({ userAddr });
+        }
+
+        if (!account.zkProofs) {
+          set({ isProofsLoading: true });
+          const zkproofs = await getZkProof({
+            // @ts-ignore
+            maxEpoch: get().maxEpoch,
+            // @ts-ignores
+            jwtRandomness: get().randomness,
+            // @ts-ignore
+            extendedEphemeralPublicKey: get().ephemeralPublicKey,
+            // @ts-ignores
+            jwt: get().jwt,
+            // @ts-ignore
+            salt: get().salt(),
+          });
+
+          set({ zkProofs: zkproofs });
+          set({ isProofsLoading: false });
+        }
+      },
+      getJwt: () => {
+        const urlFragment = window.location.hash.substring(1);
+        const urlParams = new URLSearchParams(urlFragment);
+        const jwt = urlParams.get("id_token");
+
+        if (!jwt) {
+          return;
+        }
+        window.history.replaceState(null, "", window.location.pathname); // remove URL fragment
+
+        const jwtPayload = decodeJwt(jwt);
+        if (!jwtPayload.sub || !jwtPayload.aud) {
+          console.warn("[completeZkLogin] missing jwt.sub or jwt.aud");
+          return;
+        }
+
+        set({
+          jwt,
+          sub: jwtPayload.sub,
+          aud:
+            typeof jwtPayload.aud === "string"
+              ? jwtPayload.aud
+              : jwtPayload.aud[0],
+        });
+      },
+      account: () => ({
+        // @ts-ignore
+        provider: get().provider,
+        // @ts-ignore
+        userAddr: get().userAddr,
+        // @ts-ignore
+        zkProofs: get().zkProofs,
+        // @ts-ignore
+        ephemeralPublicKey: get().ephemeralPublicKey,
+        // @ts-ignore
+        ephemeralPrivateKey: get().ephemeralPrivateKey,
+        // @ts-ignores
+        userSalt: get().salt(),
+        // @ts-ignores
         jwt: get().jwt,
-        salt: get().salt(),
-      });
-
-      set({ zkProofs: zkproofs });
-      set({ isProofsLoading: false });
+        // @ts-ignore
+        sub: get().sub,
+        // @ts-ignore
+        aud: get().aud,
+        // @ts-ignore
+        maxEpoch: get().maxEpoch,
+        // @ts-ignore
+        randomeness: get().randomness,
+      }),
+    }),
+    {
+      name: "zkLoginSetup",
+      getStorage: () => localStorage,
+      partialize: (state: any) => ({
+        // provider: state.provider,
+        userAddr: state.userAddr,
+        // zkProofs: state.zkProofs,
+        // ephemeralPublicKey: state.ephemeralPublicKey,
+        // ephemeralPrivateKey: state.ephemeralPrivateKey,
+        // userSalt: state.salt(),
+        // jwt: state.jwt,
+        // sub: state.sub,
+        // aud: state.aud,
+        // maxEpoch: state.maxEpoch,
+        // randomeness: state.randomness,
+      }),
     }
-  },
-  getJwt: () => {
-    const urlFragment = window.location.hash.substring(1);
-    const urlParams = new URLSearchParams(urlFragment);
-    const jwt = urlParams.get("id_token")!;
-
-    if (!jwt) {
-      return;
-    }
-    window.history.replaceState(null, "", window.location.pathname); // remove URL fragment
-
-    const jwtPayload = decodeJwt(jwt);
-    if (!jwtPayload.sub || !jwtPayload.aud) {
-      console.warn("[completeZkLogin] missing jwt.sub or jwt.aud");
-      return;
-    }
-
-    set({
-      jwt,
-      sub: jwtPayload.sub,
-      aud:
-        typeof jwtPayload.aud === "string" ? jwtPayload.aud : jwtPayload.aud[0],
-    });
-  },
-  account: () => ({
-    provider: get().provider,
-    userAddr: get().userAddr,
-    zkProofs: get().zkProofs!,
-    ephemeralPublicKey: get().ephemeralPublicKey,
-    ephemeralPrivateKey: get().ephemeralPrivateKey,
-    userSalt: get().salt(),
-    jwt: get().jwt,
-    sub: get().sub,
-    aud: get().aud,
-    maxEpoch: get().maxEpoch,
-    randomeness: get().randomness,
-  }),
-}));
+  )
+);
 
 const getLoginUrl = (props: { provider: OpenIdProvider; nonce: string }) => {
   const REDIRECT_URI = window.location.origin;

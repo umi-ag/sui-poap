@@ -4,18 +4,15 @@ export const isProduction = () => {
 };
 
 export const PACKAGE_ID =
-  "0x91933dc41b3c13818d4674b9dfd8936f65520c1b17ec0ec6eb5c28bcaca0438b";
+  "0x40e91e8acaeab51d862f35ba278ab8f139db5fbd1c4bc1595625d2649651dc51";
 
 export const VISITOR_LIST_ID =
-  "0x9057a07d88e07f7b8b748a04a1d2810dbc2ee092dfd7597aa6e5396b18144568";
+  "0xd71d97dbb3f8e490e23452da539b4b3adbbc78a2b4963dead2e7935b855cc34d";
 
 export const CLOCK_ID = "0x6";
 
 export const cocoObjectType = `${PACKAGE_ID}::nft::CoCoNFT`;
 
-export const ZKLOGIN_ACCONTS = `zklogin-${VISITOR_LIST_ID}.accounts`;
-export const OBJECT_ID = `zklogin-${VISITOR_LIST_ID}.objectid`;
-export const ZKLOGIN_ADDRESS = `zklogin-${VISITOR_LIST_ID}.address`;
-export const ZKLOGIN_COLOR = `zklogin-${VISITOR_LIST_ID}.color`;
+export const ZKLOGIN_ACCONTS = `zklogin-demo.accounts`;
 
 export const EVENT_CODE = "zklogin";

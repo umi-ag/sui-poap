@@ -58,6 +58,22 @@ export type SetupData = {
   ephemeralPrivateKey: string;
 };
 
+export type zkLoginState = SetupData & {
+  beginZkLogin: (provider: OpenIdProvider) => void;
+  completeZkLogin: (account: Account) => void;
+  nonce: string;
+  loginUrl: () => string;
+  userAddr: string;
+  jwt: string;
+  aud: string;
+  sub: string;
+  salt: () => string;
+  getJwt: () => void;
+  zkProofs: ZKProof | null;
+  account: () => Account;
+  isProofsLoading: boolean;
+};
+
 export type AccountData = {
   provider: OpenIdProvider;
   userAddr: string;

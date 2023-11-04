@@ -14,12 +14,7 @@ import { moveCallSponsored } from "src/libs/coco/sponsoredZkLogin";
 import { shortenAddress } from "src/utils";
 import { PACKAGE_ID, cocoObjectType } from "src/config";
 import googleAnimationData from "src/components/interface/animations/google.json";
-import {
-  ZKLOGIN_ACCONTS,
-  OBJECT_ID,
-  ZKLOGIN_ADDRESS,
-  ZKLOGIN_COLOR,
-} from "src/config";
+import { ZKLOGIN_ACCONTS } from "src/config";
 import { getOwnedCocoObjectId } from "src/utils/getObject";
 
 export default function Home() {
@@ -32,14 +27,6 @@ export default function Home() {
     ZKLOGIN_ACCONTS,
     null
   );
-  const [objectid, setObjectid] = useLocalStorage<string | null>(
-    OBJECT_ID,
-    null
-  );
-  const [zkAddress, setZkAddress] = useLocalStorage<string | null>(
-    ZKLOGIN_ADDRESS,
-    null
-  );
   const { container: googleAnimationContainer } = useLottie(
     googleAnimationData,
     true
@@ -50,7 +37,7 @@ export default function Home() {
     if (address) {
       const coco_id = await getOwnedCocoObjectId(address, cocoObjectType);
       if (coco_id !== "") {
-        setObjectid(coco_id);
+        router.push("/nft");
       }
     }
   };
@@ -59,28 +46,16 @@ export default function Home() {
     if (account) {
       zkLoginSetup.completeZkLogin(account);
     }
-    if (objectid) {
-      router.push("/nft");
-      // router.push(`/${objectid}`);
-    }
-    if (zkAddress) {
-      getObjectfromAddress(zkAddress);
+    if (zkLoginSetup.userAddr) {
+      getObjectfromAddress(zkLoginSetup.userAddr);
     }
   }, []);
 
-  useEffect(() => {
-    if (zkLoginSetup.userAddr) {
-      getObjectfromAddress(zkLoginSetup.userAddr);
-      setZkAddress(zkLoginSetup.userAddr);
-    }
-  }, [zkLoginSetup.userAddr]);
-
-  useEffect(() => {
-    if (objectid) {
-      router.push("/nft");
-      // router.push(`/${objectid}`);
-    }
-  }, [objectid]);
+  // useEffect(() => {
+  //   if (zkLoginSetup.userAddr) {
+  //     getObjectfromAddress(zkLoginSetup.userAddr);
+  //   }
+  // }, [zkLoginSetup.userAddr]);
 
   // https://docs.sui.io/build/zk_login#set-up-oauth-flow
   const beginZkLogin = async (provider: OpenIdProvider) => {
@@ -90,7 +65,6 @@ export default function Home() {
     console.log(zkLoginSetup.account());
     setAccount(zkLoginSetup.account());
     console.log(zkLoginSetup.userAddr);
-    setZkAddress(zkLoginSetup.userAddr);
     const loginUrl = zkLoginSetup.loginUrl();
     window.location.replace(loginUrl);
   };
@@ -102,7 +76,7 @@ export default function Home() {
   ];
 
   const status = () => {
-    if (!zkLoginSetup.jwt) {
+    if (!zkLoginSetup.userAddr) {
       return "Not signed in";
     }
 
@@ -114,7 +88,6 @@ export default function Home() {
   };
 
   return (
-    // @ts-ignore
     <div
       className="flex flex-col items-center justify-center w-full"
       // @ts-ignore
@@ -165,7 +138,7 @@ export default function Home() {
       <div className="flex flex-col">
         <div className="flex mb-2">
           <p className="text-white text-lg flex-shrink-0">zkLogin Address:</p>
-          {zkLoginSetup.userAddr && (
+          {zkLoginSetup.zkProofs && (
             <b className="ml-2">
               <a
                 className="text-blue-400 underline"
@@ -204,7 +177,6 @@ export default function Home() {
             const account = zkLoginSetup.account();
             console.log("account", account);
             console.log(zkLoginSetup.userAddr);
-            setZkAddress(zkLoginSetup.userAddr);
             const txb = new TransactionBlock();
             const result = await moveCallSponsored(txb, account);
             if (result.effects?.status.status === "success") {
