@@ -69,7 +69,7 @@ export type zkLoginState = SetupData & {
   sub: string;
   salt: () => string;
   getJwt: () => void;
-  zkProofs: ZKProof | null;
+  zkProofs: any;
   account: () => Account;
   isProofsLoading: boolean;
 };

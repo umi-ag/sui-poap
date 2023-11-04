@@ -6,7 +6,7 @@ import {
   ZKProof,
   zkLoginState,
 } from "src/types";
-import { create } from "zustand";
+import { create, StateCreator } from "zustand";
 import { persist } from "zustand/middleware";
 import config from "src/config/config.json";
 
@@ -15,7 +15,10 @@ import {
   generateRandomness,
   jwtToAddress,
 } from "@mysten/zklogin";
-import { Ed25519Keypair } from "@mysten/sui.js/keypairs/ed25519";
+import {
+  Ed25519Keypair,
+  Ed25519PublicKey,
+} from "@mysten/sui.js/keypairs/ed25519";
 import { match } from "ts-pattern";
 import { toBigIntBE } from "bigint-buffer";
 import { decodeJwt } from "jose";
@@ -40,7 +43,7 @@ import { decodeJwt } from "jose";
 
 const MAX_EPOCH = 1; // keep ephemeral keys active for this many Sui epochs from now (1 epoch ~= 24h)
 
-export const useZkLoginSetup = create(
+export const useZkLoginSetup = create<zkLoginState>(
   persist(
     (set, get) => ({
       provider: "Google",
@@ -51,9 +54,7 @@ export const useZkLoginSetup = create(
       nonce: "",
       loginUrl: () => {
         return getLoginUrl({
-          // @ts-ignore
           nonce: get().nonce,
-          // @ts-ignore
           provider: get().provider,
         });
       },
@@ -64,7 +65,6 @@ export const useZkLoginSetup = create(
       zkProofs: null,
       salt: () => "",
       isProofsLoading: false,
-      // @ts-ignore
       beginZkLogin: async (provider) => {
         const { epoch } = await suiClient.getLatestSuiSystemState();
         const maxEpoch = Number(epoch) + MAX_EPOCH; // the ephemeral key will be valid for MAX_EPOCH from now
@@ -82,28 +82,23 @@ export const useZkLoginSetup = create(
         });
 
         const nonce = generateNonce(
-          // @ts-ignore
-          ephemeralKeyPair.getPublicKey(),
+          ephemeralKeyPair.getPublicKey() as any,
           maxEpoch,
           randomness
         );
         set({ randomness, nonce });
       },
-      // @ts-ignore
       completeZkLogin: async (account) => {
         set({
-          provider: account.provider,
+          provider: account.provider as OpenIdProvider,
           maxEpoch: account.maxEpoch,
           ephemeralPublicKey: account.ephemeralPublicKey,
           ephemeralPrivateKey: account.ephemeralPrivateKey,
           randomness: account.randomeness,
         });
 
-        // @ts-ignore
         if (!get().jwt) {
-          // @ts-ignore
           get().getJwt();
-          // @ts-ignore
           const userAddr = jwtToAddress(get().jwt, get().salt());
           set({ userAddr });
         }
@@ -111,15 +106,10 @@ export const useZkLoginSetup = create(
         if (!account.zkProofs) {
           set({ isProofsLoading: true });
           const zkproofs = await getZkProof({
-            // @ts-ignore
             maxEpoch: get().maxEpoch,
-            // @ts-ignores
             jwtRandomness: get().randomness,
-            // @ts-ignore
             extendedEphemeralPublicKey: get().ephemeralPublicKey,
-            // @ts-ignores
             jwt: get().jwt,
-            // @ts-ignore
             salt: get().salt(),
           });
 
@@ -153,34 +143,23 @@ export const useZkLoginSetup = create(
         });
       },
       account: () => ({
-        // @ts-ignore
         provider: get().provider,
-        // @ts-ignore
         userAddr: get().userAddr,
-        // @ts-ignore
         zkProofs: get().zkProofs,
-        // @ts-ignore
         ephemeralPublicKey: get().ephemeralPublicKey,
-        // @ts-ignore
         ephemeralPrivateKey: get().ephemeralPrivateKey,
-        // @ts-ignores
         userSalt: get().salt(),
-        // @ts-ignores
         jwt: get().jwt,
-        // @ts-ignore
         sub: get().sub,
-        // @ts-ignore
         aud: get().aud,
-        // @ts-ignore
         maxEpoch: get().maxEpoch,
-        // @ts-ignore
         randomeness: get().randomness,
       }),
     }),
     {
       name: "zkLoginSetup",
       getStorage: () => localStorage,
-      partialize: (state: any) => ({
+      partialize: (state: zkLoginState) => ({
         // provider: state.provider,
         userAddr: state.userAddr,
         // zkProofs: state.zkProofs,
@@ -194,7 +173,7 @@ export const useZkLoginSetup = create(
         // randomeness: state.randomness,
       }),
     }
-  )
+  ) as StateCreator<zkLoginState, [], []>
 );
 
 const getLoginUrl = (props: { provider: OpenIdProvider; nonce: string }) => {
