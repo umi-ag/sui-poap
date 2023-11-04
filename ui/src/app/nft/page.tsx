@@ -1,39 +1,49 @@
 // ui/src/app/nft/page.tsx
 "use client";
 
-import ThreeScene from "./components/ThreeScene";
+import ThreeScene from "src/components/ThreeScene";
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useZkLoginSetup } from "src/store/zklogin";
-import style from "../styles/login.module.css";
+import style from "src/app/styles/login.module.css";
 import { shortenAddress } from "src/utils";
-import { OBJECT_ID, ZKLOGIN_ADDRESS, ZKLOGIN_COLOR } from "src/config";
+import { PACKAGE_ID, cocoObjectType } from "src/config";
 import type { ColorsType } from "src/types";
 import { updateColors } from "src/utils/getColor";
+import { getOwnedCocoObjectId } from "src/utils/getObject";
 
 export default function Coin() {
   const router = useRouter();
   const zkLoginSetup = useZkLoginSetup();
-  const [objectId, setObjectId] = useState(null);
-  const [address, setAddress] = useState(null);
+  const [objectId, setObjectId] = useState<string | null>(null);
+  // const [address, setAddress] = useState(null);
   const [colors, setColors] = useState<ColorsType | null>(null);
 
   useEffect(() => {
+    const getObject = async () => {
+      const obj_id = await getOwnedCocoObjectId(
+        zkLoginSetup.userAddr,
+        cocoObjectType
+      );
+      setObjectId(obj_id);
+
+      if (!zkLoginSetup.userAddr || !obj_id) {
+        router.push("/");
+        return;
+      }
+      // setAddress(addr);
+      // setObjectId(obj_id);
+      // @ts-ignore
+      // const localColors = JSON.parse(localStorage.getItem(ZKLOGIN_COLOR));
+      setColors(updateColors(obj_id));
+    };
     // @ts-ignore
-    const addr = JSON.parse(localStorage.getItem(ZKLOGIN_ADDRESS));
-    console.log({ addr });
+    // const addr = JSON.parse(localStorage.getItem(ZKLOGIN_ADDRESS));
+    // console.log({ addr });
     // @ts-ignore
-    const obj_id = JSON.parse(localStorage.getItem(OBJECT_ID));
-    console.log({ obj_id });
-    if (!addr || !obj_id) {
-      router.push("/");
-      return;
-    }
-    setAddress(addr);
-    setObjectId(obj_id);
-    // @ts-ignore
-    // const localColors = JSON.parse(localStorage.getItem(ZKLOGIN_COLOR));
-    setColors(updateColors(obj_id));
+    // const obj_id = JSON.parse(localStorage.getItem(OBJECT_ID));
+    // console.log({ obj_id });
+    getObject();
   }, []);
 
   if (!colors) return null;
@@ -82,19 +92,19 @@ export default function Coin() {
             >
               Your Address:
             </p>
-            {address && (
+            {zkLoginSetup.userAddr && (
               <b
                 className={`${style.mySpecialFont} mt-5 text-center text-white text-2xl font-bold leading-9 ml-2`}
               >
                 {" "}
                 <a
                   className="text-blue-400 underline"
-                  href={`https://suiscan.xyz/mainnet/account/${address}/tx-blocks`}
+                  href={`https://suiscan.xyz/mainnet/account/${zkLoginSetup.userAddr}/tx-blocks`}
                   target="_blank"
                   rel="noopener noreferrer"
                 >
                   {/* @ts-ignore */}
-                  {shortenAddress(address)}
+                  {shortenAddress(zkLoginSetup.userAddr)}
                 </a>
               </b>
             )}
