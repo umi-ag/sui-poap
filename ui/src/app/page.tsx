@@ -12,7 +12,7 @@ import { Account, OpenIdProvider } from "src/types";
 import { useZkLoginSetup } from "src/store/zklogin";
 import { moveCallSponsored } from "src/libs/coco/sponsoredZkLogin";
 import { shortenAddress } from "src/utils";
-import { PACKAGE_ID, cocoObjectType } from "src/config";
+import { cocoObjectType } from "src/config";
 import googleAnimationData from "src/components/interface/animations/google.json";
 import { ZKLOGIN_ACCONTS } from "src/config";
 import { getOwnedCocoObjectId } from "src/utils/getObject";
@@ -90,7 +90,6 @@ export default function Home() {
   return (
     <div
       className="flex flex-col items-center justify-center w-full"
-      // @ts-ignore
       style={styles.compose}
     >
       <div style={styles.contentTop}>
@@ -181,17 +180,13 @@ export default function Home() {
             const result = await moveCallSponsored(txb, account);
             if (result.effects?.status.status === "success") {
               setDigest(result.digest);
-              const matchingObject = result.objectChanges?.find(
-                // @ts-ignore
-                (obj) => obj?.objectType === cocoObjectType
+              const matchingObject: any = result.objectChanges?.find(
+                (obj: any) => obj?.objectType === cocoObjectType
               );
-              // @ts-ignore
               if (!matchingObject || !matchingObject.objectType) {
                 setErr("Double Mint rejected...");
                 throw new Error("objectType not found");
               }
-              // @ts-ignore
-              setObjectid(matchingObject.objectId);
             } else {
               // setErr(`Transaction Failed: ${result.effects?.status.error}`);
               setErr("Transaction Failed...");

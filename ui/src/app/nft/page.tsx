@@ -16,7 +16,6 @@ export default function Coin() {
   const router = useRouter();
   const zkLoginSetup = useZkLoginSetup();
   const [objectId, setObjectId] = useState<string | null>(null);
-  // const [address, setAddress] = useState(null);
   const [colors, setColors] = useState<ColorsType | null>(null);
 
   useEffect(() => {
@@ -31,34 +30,18 @@ export default function Coin() {
         router.push("/");
         return;
       }
-      // setAddress(addr);
-      // setObjectId(obj_id);
-      // @ts-ignore
-      // const localColors = JSON.parse(localStorage.getItem(ZKLOGIN_COLOR));
       setColors(updateColors(obj_id));
     };
-    // @ts-ignore
-    // const addr = JSON.parse(localStorage.getItem(ZKLOGIN_ADDRESS));
-    // console.log({ addr });
-    // @ts-ignore
-    // const obj_id = JSON.parse(localStorage.getItem(OBJECT_ID));
-    // console.log({ obj_id });
     getObject();
   }, []);
 
   if (!colors) return null;
   const hexColors = {
-    // @ts-ignore
     l1: "0x" + colors.l1.toString(16).padStart(6, "0"),
-    // @ts-ignore
     l2: "0x" + colors.l2.toString(16).padStart(6, "0"),
-    // @ts-ignore
     l3: "0x" + colors.l3.toString(16).padStart(6, "0"),
-    // @ts-ignore
     r1: "0x" + colors.r1.toString(16).padStart(6, "0"),
-    // @ts-ignore
     r2: "0x" + colors.r2.toString(16).padStart(6, "0"),
-    // @ts-ignore
     r3: "0x" + colors.r3.toString(16),
   };
 
@@ -103,7 +86,6 @@ export default function Coin() {
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  {/* @ts-ignore */}
                   {shortenAddress(zkLoginSetup.userAddr)}
                 </a>
               </b>
@@ -128,7 +110,6 @@ export default function Coin() {
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  {/* @ts-ignore */}
                   {shortenAddress(objectId)}
                 </a>
               </b>

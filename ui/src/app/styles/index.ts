@@ -3,9 +3,9 @@ export const styles = {
     background: "url('/login/background.png') center / cover no-repeat",
     width: "100vw",
     height: "100vh",
-    boxSizing: "border-box",
+    boxSizing: "border-box" as const,
     display: "flex",
-    flexDirection: "column",
+    flexDirection: "column" as const,
     justifyContent: "space-between",
   },
   contentTop: {

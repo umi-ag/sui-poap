@@ -1,13 +1,11 @@
 import { useEffect, useRef } from "react";
 import Lottie from "lottie-web";
 
-// @ts-ignore
-export function useLottie(animationData, replay) {
+export function useLottie(animationData: any, replay: any) {
   const container = useRef(null);
   useEffect(() => {
     const animation = Lottie.loadAnimation({
-      // @ts-ignore
-      container: container.current,
+      container: (container as any).current,
       renderer: "svg",
       loop: replay,
       autoplay: true,

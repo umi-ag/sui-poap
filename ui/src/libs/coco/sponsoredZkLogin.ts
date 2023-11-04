@@ -36,7 +36,6 @@ export const moveCallSponsored = async (
 
   console.log("sponsoredResponse", sponsoredResponse);
 
-  // @ts-ignore
   const gaslessTxb = TransactionBlock.from(sponsoredResponse.txBytes);
 
   const ephemeralKeyPair = Ed25519Keypair.fromSecretKey(
@@ -68,7 +67,6 @@ export const moveCallSponsored = async (
   // Execute the transaction
   const r = await suiClient.executeTransactionBlock({
     transactionBlock: bytes,
-    // @ts-ignore
     signature: [zkLoginSignature, sponsoredResponse.signature],
     requestType: "WaitForLocalExecution",
     options: {

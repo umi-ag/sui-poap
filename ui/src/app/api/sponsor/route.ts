@@ -17,17 +17,12 @@ const fetchSponsoredTransaction = async (
   );
 
   const GAS_BUDGET = 5e7;
-  // @ts-ignore
-  const sponsoredResponse = await shinamiClient.gas_sponsorTransactionBlock(
-    payloadBase64,
-    userAddress,
-    GAS_BUDGET
-  );
-  const sponsoredStatus =
-    // @ts-ignore
-    await shinamiClient.gas_getSponsoredTransactionBlockStatus(
-      sponsoredResponse.txDigest
-    );
+  const sponsoredResponse = await (
+    shinamiClient as any
+  ).gas_sponsorTransactionBlock(payloadBase64, userAddress, GAS_BUDGET);
+  const sponsoredStatus = await (
+    shinamiClient as any
+  ).gas_getSponsoredTransactionBlockStatus(sponsoredResponse.txDigest);
   console.log("Sponsorship Status:", sponsoredStatus);
 
   return sponsoredResponse;
