@@ -1,4 +1,4 @@
-// ui/src/app/nft/page.tsx
+// ui/src/app/[id]/page.tsx
 "use client";
 
 import ThreeScene from "src/components/ThreeScene";
@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import { useZkLoginSetup } from "src/store/zklogin";
 import style from "src/app/styles/login.module.css";
 import { shortenAddress } from "src/utils";
-import { PACKAGE_ID, cocoObjectType } from "src/config";
+import { cocoObjectType } from "src/config";
 import type { ColorsType } from "src/types";
 import { updateColors } from "src/utils/getColor";
 import { getOwnedCocoObjectId } from "src/utils/getObject";
