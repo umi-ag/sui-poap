@@ -37,8 +37,7 @@ export default function Home() {
     if (address) {
       const coco_id = await getOwnedCocoObjectId(address, cocoObjectType);
       if (coco_id !== "") {
-        // router.push("/nft");
-        router.push(`/${coco_id}`);
+        router.push(`/nft?objectid=${coco_id}`);
       }
     }
   };
