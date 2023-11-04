@@ -17,6 +17,8 @@ module coco::nft {
     use sui::package;
     use sui::display;
 
+    friend coco::issuer;
+
     /// The CoCoNFT - an outstanding collection of digital art.
     struct CoCoNFT has key, store {
         id: UID,
@@ -40,6 +42,7 @@ module coco::nft {
     fun init(otw: NFT, ctx: &mut TxContext) {
         let keys = vector[
             utf8(b"name"),
+            utf8(b"link"),
             utf8(b"image_url"),
             utf8(b"description"),
             utf8(b"project_url"),
@@ -49,6 +52,7 @@ module coco::nft {
         let values = vector[
             // For `name` one can use the `CoCoNFT.name` property
             utf8(b"{name}"),
+            utf8(b"https://poap.umilabs.org/{id}"),
             utf8(b"{img_url}"),
             // Description is static for all `CoCoNFT` objects.
             utf8(b"{description}"),
@@ -73,7 +77,7 @@ module coco::nft {
         transfer::public_transfer(display, tx_context::sender(ctx));
     }
 
-    public fun new(
+    public(friend) fun new(
         name: String,
         description: String,
         img_url: String,
@@ -82,15 +86,15 @@ module coco::nft {
     ): CoCoNFT {
         CoCoNFT {
             id: object::new(ctx),
-            name: name,
-            description: description,
-            img_url: img_url,
+            name,
+            description,
+            img_url,
             created_by: tx_context::sender(ctx),
             created_at: clock::timestamp_ms(clock),
         }
     }
 
-    public fun uid_mut_as_owner(
+    public(friend) fun uid_mut_as_owner(
         self: &mut CoCoNFT
     ): &mut UID {
         &mut self.id
