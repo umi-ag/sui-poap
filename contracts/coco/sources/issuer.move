@@ -34,7 +34,7 @@ module coco::issuer {
 
     public entry fun create_event(
         config: &mut EventConfig,
-        key: String,
+        event_key: String,
         description: String,
         expired_at: u64,
         ctx: &mut TxContext,
@@ -45,20 +45,19 @@ module coco::issuer {
             expired_at,
             visitors: vec_set::empty<address>(),
         };
-        dof::add(&mut config.id, key, event);
+        dof::add(&mut config.id, event_key, event);
     }
 
     public entry fun mint(
         config: &mut EventConfig,
         clock: &Clock,
-        key: String,
+        event_key: String,
         name: String,
         description: String,
         img_url: String,
-        date: String,
         ctx: &mut TxContext,
     ) {
-        let event: &mut Event = dof::borrow_mut(&mut config.id, key);
+        let event: &mut Event = dof::borrow_mut(&mut config.id, event_key);
         assert!(clock::timestamp_ms(clock) < event.expired_at, EExpiredAt);
         vec_set::insert(&mut event.visitors, tx_context::sender(ctx));
         let nft = nft::new(name, description, img_url, clock, ctx);
