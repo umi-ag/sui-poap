@@ -11,6 +11,7 @@ import { cocoObjectType } from "src/config";
 import type { ColorsType } from "src/types";
 import { updateColors } from "src/utils/getColor";
 import { getOwnedCocoObjectId } from "src/utils/getObject";
+import { NETWORK } from "src/config/sui";
 
 export default function Coin() {
   const router = useRouter();
@@ -82,7 +83,7 @@ export default function Coin() {
                 {" "}
                 <a
                   className="text-blue-400 underline"
-                  href={`https://suiscan.xyz/mainnet/account/${zkLoginSetup.userAddr}/tx-blocks`}
+                  href={`https://suiscan.xyz/${NETWORK}/account/${zkLoginSetup.userAddr}/tx-blocks`}
                   target="_blank"
                   rel="noopener noreferrer"
                 >
@@ -106,7 +107,7 @@ export default function Coin() {
                 {" "}
                 <a
                   className="text-blue-400 underline"
-                  href={`https://suiscan.xyz/mainnet/object/${objectId}`}
+                  href={`https://suiscan.xyz/${NETWORK}/object/${objectId}`}
                   target="_blank"
                   rel="noopener noreferrer"
                 >

@@ -1,12 +1,10 @@
-// import { getOwnedObjects } from "@mysten/sui.js";
-import { getFullnodeUrl, SuiClient } from "@mysten/sui.js/client";
+import { suiClient } from "src/config/sui";
 
 export async function getOwnedCocoObjectId(
   address: string,
   objectType: string
 ) {
-  const client = new SuiClient({ url: getFullnodeUrl("mainnet") });
-  const data = await client.getOwnedObjects({
+  const data = await suiClient.getOwnedObjects({
     owner: address,
     filter: {
       MatchAll: [

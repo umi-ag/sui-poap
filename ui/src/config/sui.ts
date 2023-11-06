@@ -21,7 +21,7 @@ const SPONSOR_RPC_URL_PROXY = proxy(SPONSOR_RPC_URL);
 
 export const sponsor = rpcClient<SponsorRpc>(SPONSOR_RPC_URL_PROXY);
 
-export const NETWORK = "mainnet";
+export const NETWORK = "testnet";
 
 export const suiClient = new SuiClient({
   url: getFullnodeUrl(NETWORK),

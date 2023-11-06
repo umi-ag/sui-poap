@@ -35,20 +35,24 @@ bun update
 
 [tasks."deploy:sui"]
 script = '''
-cd contracts/sui-poap
+cd contracts/coco
 sui client publish --gas-budget 123456789 --skip-dependency-verification
 '''
 
-[tasks."test:math"]
+[tasks."create:event"]
 script = '''
-cd contracts/math
-sui move test
-'''
-
-[tasks."deploy:coinhouse"]
-script = '''
-cd contracts/coin-house
-sui client publish --gas-budget 123456789 --skip-dependency-verification
+cd contracts/coco
+PACKAGE=0xa83fad6febe333a484de95ea62be6344280548f2cb3cdd54782300914b50efe1
+sui client call \
+    --package $PACKAGE \
+    --module issuer \
+    --function create_event \
+    --args \
+        0x8dc7bd83293d27e578194de7cb5b39778e9d777722475817c2cf6e2c5d90d808 \
+        "movejp10" \
+        "Sui POAP" \
+        20000000000000 \
+    --gas-budget 123456789
 '''
 
 [tasks."gen:sui"]

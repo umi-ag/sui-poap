@@ -15,6 +15,7 @@ import { shortenAddress } from "src/utils";
 import { cocoObjectType } from "src/config";
 import googleAnimationData from "src/components/interface/animations/google.json";
 import { ZKLOGIN_ACCONTS } from "src/config";
+import { NETWORK } from "src/config/sui";
 
 export default function Home() {
   const router = useRouter();
@@ -122,7 +123,7 @@ export default function Home() {
             <b className="ml-2">
               <a
                 className="text-blue-400 underline"
-                href={`https://suiscan.xyz/mainnet/account/${zkLoginSetup.userAddr}/tx-blocks`}
+                href={`https://suiscan.xyz/${NETWORK}/account/${zkLoginSetup.userAddr}/tx-blocks`}
               >
                 {shortenAddress(zkLoginSetup.userAddr)}
               </a>
@@ -136,7 +137,7 @@ export default function Home() {
         <p className="mt-2">
           <a
             className="text-blue-400 underline"
-            href={`https://suiscan.xyz/mainnet/tx/${digest}`}
+            href={`https://suiscan.xyz/${NETWORK}/tx/${digest}`}
           >
             {digest}
           </a>
@@ -164,11 +165,13 @@ export default function Home() {
               const matchingObject: any = result.objectChanges?.find(
                 (obj: any) => obj?.objectType === cocoObjectType
               );
+              console.log({ matchingObject });
               if (!matchingObject || !matchingObject.objectType) {
                 setErr("Double Mint rejected...");
                 throw new Error("objectType not found");
               }
               router.push(`/nft?objectid=${matchingObject.objectId}`);
+              console.log("done!");
             } else {
               // setErr(`Transaction Failed: ${result.effects?.status.error}`);
               setErr("Transaction Failed...");
