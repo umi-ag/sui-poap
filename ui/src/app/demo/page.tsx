@@ -75,11 +75,11 @@ export default function Home() {
       style={styles.compose}
     >
       <div style={styles.contentTop}>
-        {/* <p
+        <p
           className={`${style.mySpecialFont} text-right text-white text-xl mr-5`}
         >
           Sui {NETWORK === "testnet" ? "Testnet" : "Mainnet"}
-        </p> */}
+        </p>
         <p
           className={`${style.mySpecialFont} text-center text-white text-4xl mt-5`}
         >

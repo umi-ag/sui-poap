@@ -22,7 +22,7 @@ module coco::issuer {
         id: UID,
         description: String,
         expired_at: u64,
-        visitors: vec_set::VecSet<address>,
+        visitors: vector<address>,
     }
 
     fun init(ctx: &mut TxContext) {
@@ -43,7 +43,7 @@ module coco::issuer {
             id: object::new(ctx),
             description,
             expired_at,
-            visitors: vec_set::empty<address>(),
+            visitors: vector::empty(),
         };
         dof::add(&mut config.id, event_key, event);
     }
@@ -59,7 +59,7 @@ module coco::issuer {
     ) {
         let event: &mut Event = dof::borrow_mut(&mut config.id, event_key);
         assert!(clock::timestamp_ms(clock) < event.expired_at, EExpiredAt);
-        vec_set::insert(&mut event.visitors, tx_context::sender(ctx));
+        vector::push_back(&mut event.visitors, tx_context::sender(ctx));
         let nft = nft::new(name, description, img_url, clock, ctx);
         transfer::public_transfer(nft, tx_context::sender(ctx));
     }
