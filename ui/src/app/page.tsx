@@ -15,7 +15,6 @@ import { shortenAddress } from "src/utils";
 import { cocoObjectType } from "src/config";
 import googleAnimationData from "src/components/interface/animations/google.json";
 import { ZKLOGIN_ACCONTS } from "src/config";
-import { getOwnedCocoObjectId } from "src/utils/getObject";
 
 export default function Home() {
   const router = useRouter();
@@ -33,29 +32,11 @@ export default function Home() {
   );
   const zkLoginSetup = useZkLoginSetup();
 
-  const getObjectfromAddress = async (address: string) => {
-    if (address) {
-      const coco_id = await getOwnedCocoObjectId(address, cocoObjectType);
-      if (coco_id !== "") {
-        router.push(`/nft?objectid=${coco_id}`);
-      }
-    }
-  };
-
   useEffect(() => {
     if (account) {
       zkLoginSetup.completeZkLogin(account);
     }
-    if (zkLoginSetup.userAddr) {
-      getObjectfromAddress(zkLoginSetup.userAddr);
-    }
   }, []);
-
-  // useEffect(() => {
-  //   if (zkLoginSetup.userAddr) {
-  //     getObjectfromAddress(zkLoginSetup.userAddr);
-  //   }
-  // }, [zkLoginSetup.userAddr]);
 
   // https://docs.sui.io/build/zk_login#set-up-oauth-flow
   const beginZkLogin = async (provider: OpenIdProvider) => {
@@ -81,10 +62,10 @@ export default function Home() {
     }
 
     if (!zkLoginSetup.zkProofs && zkLoginSetup.isProofsLoading) {
-      return "Loading zk proofs...";
+      return "Generating zk proof...";
     }
 
-    return "Ready!";
+    return "Done!";
   };
 
   return (
@@ -137,7 +118,7 @@ export default function Home() {
       <div className="flex flex-col">
         <div className="flex mb-2">
           <p className="text-white text-lg flex-shrink-0">zkLogin Address:</p>
-          {zkLoginSetup.zkProofs && (
+          {zkLoginSetup.userAddr && (
             <b className="ml-2">
               <a
                 className="text-blue-400 underline"
@@ -187,6 +168,7 @@ export default function Home() {
                 setErr("Double Mint rejected...");
                 throw new Error("objectType not found");
               }
+              router.push(`/nft?objectid=${matchingObject.objectId}`);
             } else {
               // setErr(`Transaction Failed: ${result.effects?.status.error}`);
               setErr("Transaction Failed...");
@@ -202,7 +184,7 @@ export default function Home() {
           }`}
           disabled={!zkLoginSetup.zkProofs || loading}
         >
-          {loading ? "Loading..." : "Mint"}
+          {loading || zkLoginSetup.isProofsLoading ? "Loading..." : "Mint"}
         </button>
       </div>
     </div>

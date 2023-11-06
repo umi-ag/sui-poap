@@ -3,5 +3,5 @@
 rpc = "https://fullnode.mainnet.sui.io:443"
 
 [packages]
-Coco = {id = '0xe46fe94bef06641b2851f7e4eda2073b886aee36ab505d7a3d2161102e8489c5'}
+Coco = {id = '0x683cd21f4b6814cc59a2a494fc21e5b043c5390181b7b17cc55052530ef06379'}
 Sui = {git = "https://github.com/MystenLabs/sui.git", subdir = "crates/sui-framework/packages/sui-framework", rev = "mainnet-v1.12.2"}

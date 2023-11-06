@@ -1,5 +1,4 @@
 // ui/src/app/types/index.ts
-import Decimal from "decimal.js";
 
 export type ZKProof = {
   proofPoints: {

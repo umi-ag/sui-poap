@@ -1,11 +1,5 @@
 import { suiClient } from "src/config/sui";
-import {
-  Account,
-  OpenIdProvider,
-  SetupData,
-  ZKProof,
-  zkLoginState,
-} from "src/types";
+import { OpenIdProvider, zkLoginState } from "src/types";
 import { create, StateCreator } from "zustand";
 import { persist } from "zustand/middleware";
 import config from "src/config/config.json";
@@ -15,31 +9,10 @@ import {
   generateRandomness,
   jwtToAddress,
 } from "@mysten/zklogin";
-import {
-  Ed25519Keypair,
-  Ed25519PublicKey,
-} from "@mysten/sui.js/keypairs/ed25519";
+import { Ed25519Keypair } from "@mysten/sui.js/keypairs/ed25519";
 import { match } from "ts-pattern";
 import { toBigIntBE } from "bigint-buffer";
 import { decodeJwt } from "jose";
-
-// <
-//   SetupData & {
-//     beginZkLogin: (provider: OpenIdProvider) => void;
-//     completeZkLogin: (account: Account) => void;
-//     nonce: string;
-//     loginUrl: () => string;
-//     userAddr: string;
-//     jwt: string;
-//     aud: string;
-//     sub: string;
-//     salt: () => string;
-//     getJwt: () => void;
-//     zkProofs: ZKProof | null;
-//     account: () => Account;
-//     isProofsLoading: boolean;
-//   }
-// >
 
 const MAX_EPOCH = 1; // keep ephemeral keys active for this many Sui epochs from now (1 epoch ~= 24h)
 
@@ -161,7 +134,7 @@ export const useZkLoginSetup = create<zkLoginState>(
       getStorage: () => localStorage,
       partialize: (state: zkLoginState) => ({
         // provider: state.provider,
-        userAddr: state.userAddr,
+        // userAddr: state.userAddr,
         // zkProofs: state.zkProofs,
         // ephemeralPublicKey: state.ephemeralPublicKey,
         // ephemeralPrivateKey: state.ephemeralPrivateKey,

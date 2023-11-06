@@ -3,26 +3,26 @@ import {
   TransactionBlock,
   TransactionArgument,
 } from "@mysten/sui.js/transactions";
-import { PACKAGE_ID, VISITOR_LIST_ID, CLOCK_ID } from "src/config";
+import { PACKAGE_ID, EVENT_CONFIG_ID, CLOCK_ID } from "src/config";
 
 export interface FirstMintArgs {
   // list: string | TransactionArgument;
+  event_key: string | TransactionArgument;
   name: string | TransactionArgument;
   description: string | TransactionArgument;
   url: string | TransactionArgument;
-  date: string | TransactionArgument;
 }
 
 export function firstMint(txb: TransactionBlock, args: FirstMintArgs) {
   return txb.moveCall({
     target: `${PACKAGE_ID}::issuer::mint`,
     arguments: [
-      txb.pure(VISITOR_LIST_ID),
+      txb.pure(EVENT_CONFIG_ID),
       txb.pure(CLOCK_ID),
+      txb.pure(args.event_key),
       txb.pure(args.name),
       txb.pure(args.description),
       txb.pure(args.url),
-      txb.pure(args.date),
     ],
   });
 }
@@ -30,16 +30,16 @@ export function firstMint(txb: TransactionBlock, args: FirstMintArgs) {
 export const moveCallMintNft = (
   txb: TransactionBlock,
   props: {
+    event_key: string;
     name: string;
     description: string;
     url: string;
-    date: string;
   }
 ) => {
   firstMint(txb, {
+    event_key: props.event_key,
     name: props.name,
     description: props.description,
     url: props.url,
-    date: props.date,
   });
 };

@@ -1,4 +1,3 @@
-import { PACKAGE_ID, cocoObjectType } from "src/config";
 import { ColorsType } from "src/types";
 
 const splitObjectId = (objectId: string) => {
