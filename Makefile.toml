@@ -58,13 +58,13 @@ sui client call \
 [tasks."demo:create:event"]
 script = '''
 cd contracts/demo
-PACKAGE=0x8a6c35229bc40afb6cb01c6f4512cf978c43b94d81b100a9bb5fda3e7f27f338
+PACKAGE=0xdbda1f10ee21cea9f017a6c103b144166138966e5c09a3d9f43e4d9f03b16c2e
 sui client call \
     --package $PACKAGE \
     --module issuer \
     --function create_event \
     --args \
-        0xe4deba11203087c209e85ee560d4a74255d00d6f65a042ed8bdb3b81a0675060 \
+        0x1a98d7905b3ab0d9ef374f548dd7ab947b304dd5f9083ff9eb8adf0d698f0688 \
         "movejp10" \
         "Sui POAP" \
         2000000000000 \

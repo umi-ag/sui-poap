@@ -32,7 +32,7 @@ module coco::issuer {
         })
     }
 
-    public entry fun create_event(
+    public fun create_event(
         config: &mut EventConfig,
         event_key: String,
         description: String,
@@ -48,7 +48,7 @@ module coco::issuer {
         dof::add(&mut config.id, event_key, event);
     }
 
-    public entry fun mint(
+    public fun mint(
         config: &mut EventConfig,
         clock: &Clock,
         event_key: String,
