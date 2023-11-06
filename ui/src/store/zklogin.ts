@@ -150,7 +150,7 @@ export const useZkLoginSetup = create<zkLoginState>(
 );
 
 const getLoginUrl = (props: { provider: OpenIdProvider; nonce: string }) => {
-  const REDIRECT_URI = window.location.origin;
+  const REDIRECT_URI = window.location.origin + "/demo";
   const urlParamsBase = {
     nonce: props.nonce,
     state: new URLSearchParams({

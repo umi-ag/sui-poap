@@ -59,13 +59,25 @@ export default function Coin() {
   return (
     <div className="">
       <div style={{ position: "absolute", color: "white", width: "100vw" }}>
-        <div className="flex flex-col mt-1">
-          <div className="flex justify-center">
-            <p
+        <div className="flex flex-col mt-10">
+          <div className="flex flex-col justify-center">
+            {/* <p
               className={`${style.mySpecialFont} mt-5 text-center text-white text-2xl font-bold leading-9`}
             >
               Sui POAP <span className="text-2xl">by</span> zkLogin & Sponsored
               Transaction
+            </p> */}
+            <p
+              className={`${style.mySpecialFont} text-center text-white text-4xl mt-5`}
+            >
+              Sui POAP
+            </p>
+            <p
+              className={`${style.mySpecialFont} mt-5 text-center text-white text-3xl font-bold leading-9`}
+            >
+              <span className="text-2xl">by</span> zkLogin & Sponsored
+              Transaction,
+              <br />
             </p>
           </div>
         </div>
