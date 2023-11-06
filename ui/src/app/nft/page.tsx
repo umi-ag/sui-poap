@@ -21,13 +21,18 @@ export default function Coin() {
 
   useEffect(() => {
     const getObject = async () => {
+      if (!zkLoginSetup.userAddr) {
+        router.push("/");
+        return;
+      }
+
       const obj_id = await getOwnedCocoObjectId(
         zkLoginSetup.userAddr,
         cocoObjectType
       );
       setObjectId(obj_id);
 
-      if (!zkLoginSetup.userAddr || !obj_id) {
+      if (!obj_id) {
         router.push("/");
         return;
       }
