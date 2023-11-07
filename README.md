@@ -1,6 +1,6 @@
 ## Sui POAP by zkLogin & Sponsored Transactions
 
-https://github.com/umi-ag/sui-poap/assets/89327378/d78ad295-7735-4525-8e10-37c946456143
+https://github.com/umi-ag/sui-poap/assets/89327378/b0334177-372f-45ed-a691-68b03f3c06ba
 
 Demo: https://poap.umilabs.org/demo
 
