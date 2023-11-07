@@ -1,9 +1,7 @@
+import dayjs from "dayjs";
+
 export const convertTimestampToDate = (timestamp: string): string => {
-  const date = new Date(parseInt(timestamp, 10));
-  const year = date.getFullYear();
-  const month = (date.getMonth() + 1).toString().padStart(2, "0");
-  const day = date.getDate().toString().padStart(2, "0");
-  return `${year}/${month}/${day}`;
+  return dayjs(parseInt(timestamp, 10)).format("YYYY/MM/DD");
 };
 
 export const insertNewLines = (text: string, everyNChars: number): string => {
