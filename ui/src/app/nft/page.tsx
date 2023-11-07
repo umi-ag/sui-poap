@@ -12,12 +12,16 @@ import type { ColorsType } from "src/types";
 import { updateColors } from "src/utils/getColor";
 import { getOwnedCocoObjectId } from "src/utils/getObject";
 import { NETWORK } from "src/config/sui";
+import { suiClient } from "src/config/sui";
+import { convertTimestampToDate, insertNewLines } from "src/utils/convert";
 
 export default function Coin() {
   const router = useRouter();
   const zkLoginSetup = useZkLoginSetup();
   const [objectId, setObjectId] = useState<string | null>(null);
   const [colors, setColors] = useState<ColorsType | null>(null);
+  const [description, setDescription] = useState<string>("");
+  const [createdAt, setCreatedAt] = useState<string>("");
 
   useEffect(() => {
     const getObject = async () => {
@@ -31,6 +35,19 @@ export default function Coin() {
         cocoObjectType
       );
       setObjectId(obj_id);
+
+      const field: any = await suiClient.getObject({
+        id: obj_id,
+        options: {
+          showContent: true,
+          showType: true,
+        },
+      });
+
+      console.log({ field });
+
+      setCreatedAt(field.data?.content.fields.created_at);
+      setDescription(field.data?.content.fields.description);
 
       if (!obj_id) {
         router.push("/");
@@ -58,8 +75,8 @@ export default function Coin() {
     r1: parseInt(hexColors.r1, 16),
     r2: parseInt(hexColors.r2, 16),
     r3: parseInt(hexColors.r3, 16),
-    date: "2023/10/30",
-    num: "Suiブロックチェーンの\n     ここがすごい",
+    date: convertTimestampToDate(createdAt),
+    num: insertNewLines(description, 20),
   };
   return (
     <div className="">
