@@ -4,5 +4,5 @@ import {StructClassLoader} from "../_framework/loader";
 
 export function registerClasses(loader: StructClassLoader) { loader.register(nft.CoCoNFT);
 loader.register(nft.NFT);
-loader.register(issuer.VisitorList);
+loader.register(issuer.EventConfig);
  }

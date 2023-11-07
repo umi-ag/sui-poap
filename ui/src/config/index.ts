@@ -4,10 +4,10 @@ export const isProduction = () => {
 };
 
 export const PACKAGE_ID =
-  "0x40e91e8acaeab51d862f35ba278ab8f139db5fbd1c4bc1595625d2649651dc51";
+  "0xdbda1f10ee21cea9f017a6c103b144166138966e5c09a3d9f43e4d9f03b16c2e";
 
-export const VISITOR_LIST_ID =
-  "0xd71d97dbb3f8e490e23452da539b4b3adbbc78a2b4963dead2e7935b855cc34d";
+export const EVENT_CONFIG_ID =
+  "0x1a98d7905b3ab0d9ef374f548dd7ab947b304dd5f9083ff9eb8adf0d698f0688";
 
 export const CLOCK_ID = "0x6";
 
@@ -16,3 +16,5 @@ export const cocoObjectType = `${PACKAGE_ID}::nft::CoCoNFT`;
 export const ZKLOGIN_ACCONTS = `zklogin-demo.accounts`;
 
 export const EVENT_CODE = "zklogin";
+
+export const EVENT_KEY = "movejp10";

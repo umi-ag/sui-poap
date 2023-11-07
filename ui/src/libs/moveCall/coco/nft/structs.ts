@@ -7,7 +7,7 @@ import {SuiClient, SuiParsedData} from "@mysten/sui.js/client";
 
 /* ============================== CoCoNFT =============================== */
 
-bcs.registerStructType( "0xe46fe94bef06641b2851f7e4eda2073b886aee36ab505d7a3d2161102e8489c5::nft::CoCoNFT", {
+bcs.registerStructType( "0x683cd21f4b6814cc59a2a494fc21e5b043c5390181b7b17cc55052530ef06379::nft::CoCoNFT", {
 id: `0x2::object::UID`,
 name: `0x1::string::String`,
 description: `0x1::string::String`,
@@ -16,11 +16,11 @@ created_by: `address`,
 created_at: `u64`,
 } )
 
-export function isCoCoNFT(type: Type): boolean { return type === "0xe46fe94bef06641b2851f7e4eda2073b886aee36ab505d7a3d2161102e8489c5::nft::CoCoNFT"; }
+export function isCoCoNFT(type: Type): boolean { return type === "0x683cd21f4b6814cc59a2a494fc21e5b043c5390181b7b17cc55052530ef06379::nft::CoCoNFT"; }
 
 export interface CoCoNFTFields { id: string; name: string; description: string; imgUrl: string; createdBy: string; createdAt: bigint }
 
-export class CoCoNFT { static readonly $typeName = "0xe46fe94bef06641b2851f7e4eda2073b886aee36ab505d7a3d2161102e8489c5::nft::CoCoNFT"; static readonly $numTypeParams = 0;
+export class CoCoNFT { static readonly $typeName = "0x683cd21f4b6814cc59a2a494fc21e5b043c5390181b7b17cc55052530ef06379::nft::CoCoNFT"; static readonly $numTypeParams = 0;
 
   readonly id: string; readonly name: string; readonly description: string; readonly imgUrl: string; readonly createdBy: string; readonly createdAt: bigint
 
@@ -43,15 +43,15 @@ export class CoCoNFT { static readonly $typeName = "0xe46fe94bef06641b2851f7e4ed
 
 /* ============================== NFT =============================== */
 
-bcs.registerStructType( "0xe46fe94bef06641b2851f7e4eda2073b886aee36ab505d7a3d2161102e8489c5::nft::NFT", {
+bcs.registerStructType( "0x683cd21f4b6814cc59a2a494fc21e5b043c5390181b7b17cc55052530ef06379::nft::NFT", {
 dummy_field: `bool`,
 } )
 
-export function isNFT(type: Type): boolean { return type === "0xe46fe94bef06641b2851f7e4eda2073b886aee36ab505d7a3d2161102e8489c5::nft::NFT"; }
+export function isNFT(type: Type): boolean { return type === "0x683cd21f4b6814cc59a2a494fc21e5b043c5390181b7b17cc55052530ef06379::nft::NFT"; }
 
 export interface NFTFields { dummyField: boolean }
 
-export class NFT { static readonly $typeName = "0xe46fe94bef06641b2851f7e4eda2073b886aee36ab505d7a3d2161102e8489c5::nft::NFT"; static readonly $numTypeParams = 0;
+export class NFT { static readonly $typeName = "0x683cd21f4b6814cc59a2a494fc21e5b043c5390181b7b17cc55052530ef06379::nft::NFT"; static readonly $numTypeParams = 0;
 
   readonly dummyField: boolean
 

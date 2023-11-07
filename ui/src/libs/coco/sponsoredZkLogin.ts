@@ -12,10 +12,10 @@ export const moveCallSponsored = async (
 ) => {
   txb.setSender(account.userAddr);
   moveCallMintNft(txb, {
+    event_key: "movejp10",
     name: "Sui Meetup POAP",
     description: "Sui Japan Community Event Attendance NFT",
     url: "ipfs://bafybeiez4cq7ixp6h2fgzlzl2223t4pdydl6udxefxy4lxairivszceptm",
-    date: "2023/10/30",
   });
   const payloadBytes = await txb.build({
     client: suiClient,
@@ -36,7 +36,6 @@ export const moveCallSponsored = async (
 
   console.log("sponsoredResponse", sponsoredResponse);
 
-  // @ts-ignore
   const gaslessTxb = TransactionBlock.from(sponsoredResponse.txBytes);
 
   const ephemeralKeyPair = Ed25519Keypair.fromSecretKey(
@@ -68,7 +67,6 @@ export const moveCallSponsored = async (
   // Execute the transaction
   const r = await suiClient.executeTransactionBlock({
     transactionBlock: bytes,
-    // @ts-ignore
     signature: [zkLoginSignature, sponsoredResponse.signature],
     requestType: "WaitForLocalExecution",
     options: {

@@ -1,4 +1,4 @@
-// ui/src/app/nft/page.tsx
+// ui/src/app/[id]/page.tsx
 "use client";
 
 import ThreeScene from "src/components/ThreeScene";
@@ -7,58 +7,47 @@ import { useRouter } from "next/navigation";
 import { useZkLoginSetup } from "src/store/zklogin";
 import style from "src/app/styles/login.module.css";
 import { shortenAddress } from "src/utils";
-import { PACKAGE_ID, cocoObjectType } from "src/config";
+import { cocoObjectType } from "src/config";
 import type { ColorsType } from "src/types";
 import { updateColors } from "src/utils/getColor";
 import { getOwnedCocoObjectId } from "src/utils/getObject";
+import { NETWORK } from "src/config/sui";
 
 export default function Coin() {
   const router = useRouter();
   const zkLoginSetup = useZkLoginSetup();
   const [objectId, setObjectId] = useState<string | null>(null);
-  // const [address, setAddress] = useState(null);
   const [colors, setColors] = useState<ColorsType | null>(null);
 
   useEffect(() => {
     const getObject = async () => {
+      if (!zkLoginSetup.userAddr) {
+        router.push("/");
+        return;
+      }
+
       const obj_id = await getOwnedCocoObjectId(
         zkLoginSetup.userAddr,
         cocoObjectType
       );
       setObjectId(obj_id);
 
-      if (!zkLoginSetup.userAddr || !obj_id) {
+      if (!obj_id) {
         router.push("/");
         return;
       }
-      // setAddress(addr);
-      // setObjectId(obj_id);
-      // @ts-ignore
-      // const localColors = JSON.parse(localStorage.getItem(ZKLOGIN_COLOR));
       setColors(updateColors(obj_id));
     };
-    // @ts-ignore
-    // const addr = JSON.parse(localStorage.getItem(ZKLOGIN_ADDRESS));
-    // console.log({ addr });
-    // @ts-ignore
-    // const obj_id = JSON.parse(localStorage.getItem(OBJECT_ID));
-    // console.log({ obj_id });
     getObject();
   }, []);
 
   if (!colors) return null;
   const hexColors = {
-    // @ts-ignore
     l1: "0x" + colors.l1.toString(16).padStart(6, "0"),
-    // @ts-ignore
     l2: "0x" + colors.l2.toString(16).padStart(6, "0"),
-    // @ts-ignore
     l3: "0x" + colors.l3.toString(16).padStart(6, "0"),
-    // @ts-ignore
     r1: "0x" + colors.r1.toString(16).padStart(6, "0"),
-    // @ts-ignore
     r2: "0x" + colors.r2.toString(16).padStart(6, "0"),
-    // @ts-ignore
     r3: "0x" + colors.r3.toString(16),
   };
 
@@ -75,13 +64,25 @@ export default function Coin() {
   return (
     <div className="">
       <div style={{ position: "absolute", color: "white", width: "100vw" }}>
-        <div className="flex flex-col mt-1">
-          <div className="flex justify-center">
-            <p
+        <div className="flex flex-col mt-10">
+          <div className="flex flex-col justify-center">
+            {/* <p
               className={`${style.mySpecialFont} mt-5 text-center text-white text-2xl font-bold leading-9`}
             >
               Sui POAP <span className="text-2xl">by</span> zkLogin & Sponsored
               Transaction
+            </p> */}
+            <p
+              className={`${style.mySpecialFont} text-center text-white text-4xl mt-5`}
+            >
+              Sui POAP
+            </p>
+            <p
+              className={`${style.mySpecialFont} mt-5 text-center text-white text-3xl font-bold leading-9`}
+            >
+              <span className="text-2xl">by</span> zkLogin & Sponsored
+              Transaction,
+              <br />
             </p>
           </div>
         </div>
@@ -99,11 +100,10 @@ export default function Coin() {
                 {" "}
                 <a
                   className="text-blue-400 underline"
-                  href={`https://suiscan.xyz/mainnet/account/${zkLoginSetup.userAddr}/tx-blocks`}
+                  href={`https://suiscan.xyz/${NETWORK}/account/${zkLoginSetup.userAddr}/tx-blocks`}
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  {/* @ts-ignore */}
                   {shortenAddress(zkLoginSetup.userAddr)}
                 </a>
               </b>
@@ -124,11 +124,10 @@ export default function Coin() {
                 {" "}
                 <a
                   className="text-blue-400 underline"
-                  href={`https://suiscan.xyz/mainnet/object/${objectId}`}
+                  href={`https://suiscan.xyz/${NETWORK}/object/${objectId}`}
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  {/* @ts-ignore */}
                   {shortenAddress(objectId)}
                 </a>
               </b>

@@ -1,8 +1,6 @@
 import { rpcClient } from "typed-rpc";
 
-// const shinamiAccountKey = "sui_mainnet_a3d005b4000b794b178162d50c7e2965";
-const shinamiAccountKey = "sui_mainnet_e574df8c5c0d0ec4c5b170619a62ef49";
-const shinamiProviderUrl = `https://api.shinami.com/gas/v1/${shinamiAccountKey}`;
+const shinamiProviderUrl = `https://api.shinami.com/gas/v1/${process.env.GAS_ACCESS_KEY}`;
 
 const shinamiClient = rpcClient(shinamiProviderUrl);
 
@@ -17,17 +15,12 @@ const fetchSponsoredTransaction = async (
   );
 
   const GAS_BUDGET = 5e7;
-  // @ts-ignore
-  const sponsoredResponse = await shinamiClient.gas_sponsorTransactionBlock(
-    payloadBase64,
-    userAddress,
-    GAS_BUDGET
-  );
-  const sponsoredStatus =
-    // @ts-ignore
-    await shinamiClient.gas_getSponsoredTransactionBlockStatus(
-      sponsoredResponse.txDigest
-    );
+  const sponsoredResponse = await (
+    shinamiClient as any
+  ).gas_sponsorTransactionBlock(payloadBase64, userAddress, GAS_BUDGET);
+  const sponsoredStatus = await (
+    shinamiClient as any
+  ).gas_getSponsoredTransactionBlockStatus(sponsoredResponse.txDigest);
   console.log("Sponsorship Status:", sponsoredStatus);
 
   return sponsoredResponse;
